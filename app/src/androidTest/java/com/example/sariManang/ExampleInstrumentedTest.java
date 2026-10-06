@@ -1,4 +1,4 @@
-package com.example.kinalabasanglamok;
+package com.example.sariManang;
 
 import android.content.Context;
 
