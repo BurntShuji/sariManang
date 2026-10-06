@@ -2,6 +2,7 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
+<<<<<<< Updated upstream
       <SelectionState runConfigName="kinalabasangLamok.app.androidTest">
         <option name="selectionMode" value="DROPDOWN" />
         <DialogSelection />
@@ -30,6 +31,8 @@
         <option name="selectionMode" value="DROPDOWN" />
         <DialogSelection />
       </SelectionState>
+=======
+>>>>>>> Stashed changes
       <SelectionState runConfigName="sariManang.app">
         <option name="selectionMode" value="DROPDOWN" />
         <DialogSelection />
