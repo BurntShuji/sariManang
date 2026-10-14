@@ -7,10 +7,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SupplierActivity extends AppCompatActivity {
+
+    private LinearLayout supplierListContainer;
+    private int supplierCount = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,35 +31,65 @@ public class SupplierActivity extends AppCompatActivity {
             });
         }
 
-        CheckBox cbFavorite = findViewById(R.id.cbFavorite);
-        if (cbFavorite != null) {
-            cbFavorite.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isChecked) {
-                    Toast.makeText(SupplierActivity.this, "Saved to favorites!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(SupplierActivity.this, "Removed from favorites", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+        supplierListContainer = findViewById(R.id.supplierListContainer);
 
-        Button btnLogQuality = findViewById(R.id.btnLogQuality);
-        if (btnLogQuality != null) {
-            btnLogQuality.setOnClickListener(v -> showLogQualityDialog());
+        TextView tvAddSupplier = findViewById(R.id.tvAddSupplier);
+        if (tvAddSupplier != null) {
+            tvAddSupplier.setOnClickListener(v -> addNewSupplierCard("Supplier #" + supplierCount++));
         }
     }
 
-    private void showLogQualityDialog() {
+    private void addNewSupplierCard(String name) {
+        if (supplierListContainer == null) return;
+
+        View cardView = getLayoutInflater().inflate(R.layout.itemsuppliercard, supplierListContainer, false);
+
+        TextView tvName = cardView.findViewById(R.id.tvSupplierName);
+        if (tvName != null) {
+            tvName.setText(name);
+        }
+
+        CheckBox cbFavorite = cardView.findViewById(R.id.cbFavorite);
+        if (cbFavorite != null) {
+            cbFavorite.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                String status = isChecked ? "Saved to favorites!" : "Removed from favorites";
+                Toast.makeText(this, name + ": " + status, Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        Button btnLogQuality = cardView.findViewById(R.id.btnLogQuality);
+        if (btnLogQuality != null) {
+            btnLogQuality.setOnClickListener(v -> showLogQualityDialog(name));
+        }
+
+        supplierListContainer.addView(cardView);
+        Toast.makeText(this, name + " added!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void showLogQualityDialog(String supplierName) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = getLayoutInflater().inflate(R.layout.dialoglogquality, null);
         builder.setView(dialogView);
 
         AlertDialog dialog = builder.create();
 
+        TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
+        if (tvTitle != null) {
+            tvTitle.setText(supplierName);
+        }
+
+        TextView btnClose = dialogView.findViewById(R.id.btnCloseDialog);
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> dialog.dismiss());
+        }
+
         Button btnSubmit = dialogView.findViewById(R.id.btnSubmitRating);
-        btnSubmit.setOnClickListener(v -> {
-            Toast.makeText(this, "Rating Submitted!", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
+        if (btnSubmit != null) {
+            btnSubmit.setOnClickListener(v -> {
+                Toast.makeText(this, "Rating Submitted for " + supplierName, Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            });
+        }
 
         dialog.show();
     }
