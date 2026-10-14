@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.kinalabasanglamok"
+    namespace = "com.example.sariManang"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.example.kinalabasanglamok"
+        applicationId = "com.example.sariManang"
         minSdk = 24
         targetSdk = 37
         versionCode = 1

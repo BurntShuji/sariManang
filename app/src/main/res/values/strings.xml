@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">kinalabasangLamok</string>
+    <string name="home">Home</string>
+    <string name="buttonicon">buttonIcon</string>
+    <string name="inventoryicon">inventoryicon</string>
+    <string name="inventory">Inventory</string>
+    <string name="salesicon">salesicon</string>
+    <string name="sales">Sales</string>
+    <string name="suppliers">suppliers</string>
+    <string name="Suppliers">Suppliers</string>
+    <string name="settings">settings</string>
+    <string name="Settings">Settings</string>
 </resources>
