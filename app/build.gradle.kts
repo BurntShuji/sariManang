@@ -4,6 +4,7 @@ plugins {
 }
 
 android {
+    namespace = "com.example.sariManang"
         namespace = "com.example.sariManang"
     compileSdk {
         version = release(37)
