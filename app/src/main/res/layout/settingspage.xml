@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings Page Layout -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg" android:fitsSystemWindows="true" android:orientation="vertical">
+
+    <include layout="@layout/toolbar"/>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+            <!-- Section 1: User Account Information -->
+            <LinearLayout style="@style/SariCard" android:layout_marginTop="12dp">
+                <TextView style="@style/SariLabel" android:text="Account"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp" android:gravity="center_vertical" android:orientation="horizontal">
+                    <TextView android:id="@+id/tvAccountAvatar" android:layout_width="44dp" android:layout_height="44dp"
+                        android:background="@drawable/bg_circle" android:gravity="center"
+                        android:text="M" android:textColor="#FFFFFF" android:textSize="18sp" android:textStyle="bold"/>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_marginLeft="12dp" android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:id="@+id/tvAccountName" style="@style/SariLabel" android:text="Manang Owner" android:textSize="14sp"/>
+                        <TextView android:id="@+id/tvAccountEmail" style="@style/SariMuted" android:text="owner@sarimanang.ph"/>
+                    </LinearLayout>
+                    <TextView android:id="@+id/btnEditAccount" style="@style/SariPill" android:text="Edit"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Section 2: Store Profile Configuration -->
+            <LinearLayout style="@style/SariCard">
+                <TextView style="@style/SariLabel" android:text="Store Profile"/>
+                <EditText android:id="@+id/etStore" style="@style/SariField" android:hint="Store name" android:text="My Sari-Sari Store"/>
+                <TextView style="@style/SariMuted" android:layout_marginTop="10dp" android:text="Default low-stock alert (units)"/>
+                <EditText android:id="@+id/etLowStock" style="@style/SariField" android:inputType="number" android:text="5"/>
+            </LinearLayout>
+
+            <!-- Section 3: Reminders and Notifications Settings -->
+            <LinearLayout style="@style/SariCard">
+                <TextView style="@style/SariLabel" android:text="Reminders"/>
+                <Switch android:id="@+id/swUtang" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:checked="true" android:text="Utang payment reminders" android:textColor="@color/text_dark"/>
+                <Switch android:id="@+id/swStock" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:checked="true" android:text="Low stock and expiry alerts" android:textColor="@color/text_dark"/>
+            </LinearLayout>
+
+            <!-- Section 4: Data Management and Offline Sync -->
+            <LinearLayout style="@style/SariCard">
+                <TextView style="@style/SariLabel" android:text="Data"/>
+                <TextView style="@style/SariMuted" android:layout_marginTop="6dp" android:text="● Offline. Data is saved on this device and will sync once you're online."/>
+                <TextView android:id="@+id/btnArchive" style="@style/SariPill" android:layout_marginTop="10dp" android:text="Archive records older than 6 months"/>
+            </LinearLayout>
+
+            <!-- Section 5: Logout Action -->
+            <TextView android:id="@+id/btnLogout" style="@style/SariButton" android:layout_margin="16dp" android:text="LOG OUT"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <include layout="@layout/bottomnavigation"/>
+</LinearLayout>
