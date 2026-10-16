@@ -1,423 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools2="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/main"
-    android:background="#F5F5F5">
+<!-- Homepage Layout for sariManang app displaying daily sales summary, quick action buttons, overdue utang, low stock alerts, and sales estimates -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg" android:fitsSystemWindows="true" android:orientation="vertical">
 
-    <ScrollView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/navigation_card"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
-
-                <ImageView
-                    android:id="@+id/ivLogo"
-                    android:layout_width="120dp"
-                    android:layout_height="40dp"
-                    android:scaleType="fitStart"
-                    android:contentDescription="SariManang Logo"
-                    app:srcCompat="@drawable/logo" />
-
-                <TextView
-                    android:id="@+id/tvDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/ivLogo"
-                    android:text="Monday, October 5, 2026"
-                    android:textColor="#757575"
-                    android:textSize="12sp" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_marginEnd="-1dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:text="Hello, Name"
-                        android:textColor="#E53935"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:background="@drawable/ic_launcher_background"
-                        android:contentDescription="Profile Picture" />
-                </LinearLayout>
+            <!-- Section 1: Header with App Logo, User Greeting, and Current Date -->
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp">
+                <ImageView android:id="@+id/ivLogo" android:layout_width="140dp" android:layout_height="48dp"
+                    android:adjustViewBounds="true" android:src="@drawable/logo"/>
+                <TextView android:id="@+id/tvHello" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true" android:layout_centerVertical="true"
+                    android:text="Hello, Store Owner" android:textColor="@color/red_dark" android:textStyle="bold"/>
+                <TextView android:id="@+id/tvDate" style="@style/SariMuted" android:layout_below="@id/ivLogo"
+                    android:layout_marginTop="6dp" android:textColor="@color/text_dark" android:textSize="13sp"/>
             </RelativeLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnNewSale"
-                    android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="4dp"
-                    android:backgroundTint="#FFCDD2"
-                    android:padding="0dp"
-                    android:text="+ New Sale"
-                    android:textColor="#D32F2F"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btnRecordUtang"
-                    android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="4dp"
-                    android:backgroundTint="#FFCDD2"
-                    android:padding="0dp"
-                    android:text="+ Record Utang"
-                    android:textColor="#D32F2F"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btnAddStock"
-                    android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="#FFCDD2"
-                    android:padding="0dp"
-                    android:text="+ Add Stock"
-                    android:textColor="#D32F2F"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
+            <!-- Section 2: Quick Action Buttons (New Sale, Record Utang, Add Stock) -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:gravity="center" android:orientation="horizontal" android:padding="4dp">
+                <TextView android:id="@+id/btnNewSale" style="@style/SariPill" android:layout_marginRight="10dp" android:text="+ New Sale"/>
+                <TextView android:id="@+id/btnRecordUtang" style="@style/SariPill" android:layout_marginRight="10dp" android:text="+ Record Utang"/>
+                <TextView android:id="@+id/btnAddStock" style="@style/SariPill" android:text="+ Add Stock"/>
             </LinearLayout>
 
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp">
+            <!-- Section 3: Today's Total Sales Summary Card -->
+            <LinearLayout style="@style/SariCard" android:layout_marginTop="12dp">
+                <TextView style="@style/SariLabel" android:text="Today's Total Sales"/>
+                <TextView android:id="@+id/tvTodaySales" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" android:text="₱ 0.00" android:textColor="@color/text_dark"
+                    android:textSize="28sp"/>
+                <TextView android:id="@+id/tvTodayTransactions" style="@style/SariMuted" android:text="0 transactions today"/>
+            </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Today's total sales"
-                        android:textColor="#757575"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tvTotalSales"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="₱ 4, 250.00"
-                        android:textColor="#212121"
-                        android:textSize="26sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="1dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Overdue Utang"
-                            android:textColor="#D32F2F"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Mama mo   ₱ 100"
-                            android:textColor="#424242"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:text="8 Days Late"
-                        android:textColor="#D32F2F"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+            <!-- Section 4: Overdue Utang and Low Stock Alerts Card -->
+            <LinearLayout style="@style/SariCard">
+                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView style="@style/SariLabel" android:text="Overdue Utang"/>
+                    <TextView android:id="@+id/tvHomeUtangSummary" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true" android:text=""
+                        android:textColor="@color/red_dark" android:textSize="12sp" android:textStyle="bold"/>
                 </RelativeLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:text="Low stock"
-                        android:textColor="#D32F2F"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <ImageView
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:background="#E0E0E0"
-                            android:contentDescription="Item Thumbnail" />
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Selecta Ice Cream"
-                                android:textColor="#212121"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="PureGold  •  x 0"
-                                android:textColor="#757575"
-                                android:textSize="11sp" />
-                        </LinearLayout>
+                <LinearLayout android:id="@+id/listOverdueUtang" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_marginTop="6dp" android:orientation="vertical"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="10dp" android:background="#DDDDDD"/>
+                <TextView style="@style/SariLabel" android:layout_marginTop="10dp" android:text="Low Stock"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp" android:gravity="center_vertical" android:orientation="horizontal">
+                    <TextView android:layout_width="36dp" android:layout_height="36dp" android:background="@drawable/bg_circle"
+                        android:gravity="center" android:text="S" android:textColor="#FFFFFF" android:textStyle="bold"/>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginLeft="10dp"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView style="@style/SariLabel" android:text="Selecta Ice Cream" android:textSize="13sp"/>
+                        <TextView style="@style/SariMuted" android:text="PureGold  ★ 4.8"/>
                     </LinearLayout>
+                    <TextView style="@style/SariMuted" android:text="2 left" android:textColor="@color/red_dark" android:textStyle="bold"/>
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <!-- Section 5: Sales Estimate and Progress Tracker -->
+            <LinearLayout style="@style/SariCard">
+                <TextView style="@style/SariLabel" android:text="Sales Estimate"/>
+                <TextView style="@style/SariMuted" android:layout_marginTop="6dp"
+                    android:text="Log at least 5 sales to unlock estimates. 3 / 5 logged."/>
+                <ProgressBar style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent"
+                    android:layout_height="8dp" android:layout_marginTop="8dp" android:max="5" android:progress="3"
+                    android:progressTint="@color/red"/>
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/navigation_card"
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:importantForAccessibility="no"
-        app:cardBackgroundColor="#f0f0f0"
-        app:cardCornerRadius="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <LinearLayout
-            android:id="@+id/home_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="30dp"
-            android:layout_marginEnd="330dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?android:attr/selectableItemBackgroundBorderless">
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:contentDescription="@string/buttonicon"
-                app:srcCompat="@drawable/homebutton" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/home"
-                android:textSize="12sp"
-                android:includeFontPadding="false"
-                android:layout_marginTop="-1dp"
-                android:textColor="#000000" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/inventory_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="100dp"
-            android:layout_marginEnd="245dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?android:attr/selectableItemBackgroundBorderless">
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:contentDescription="@string/inventoryicon"
-                app:srcCompat="@drawable/inventory" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-1dp"
-                android:includeFontPadding="false"
-                android:text="@string/inventory"
-                android:textColor="#000000"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/sales_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="180dp"
-            android:layout_marginEnd="179dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?android:attr/selectableItemBackgroundBorderless">
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:contentDescription="@string/salesicon"
-                app:srcCompat="@drawable/sales" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/sales"
-                android:textSize="12sp"
-                android:includeFontPadding="false"
-                android:layout_marginTop="-1dp"
-                android:textColor="#000000" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/suppliers_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="248dp"
-            android:layout_marginEnd="95dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?android:attr/selectableItemBackgroundBorderless">
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:contentDescription="@string/suppliers"
-                app:srcCompat="@drawable/suppliers" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/Suppliers"
-                android:textSize="12sp"
-                android:includeFontPadding="false"
-                android:layout_marginTop="-1dp"
-                android:textColor="#000000" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/settings_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="330dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?android:attr/selectableItemBackgroundBorderless">
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:contentDescription="@string/settings"
-                app:srcCompat="@drawable/settings" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/Settings"
-                android:textSize="12sp"
-                android:includeFontPadding="false"
-                android:layout_marginTop="-1dp"
-                android:textColor="#000000" />
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Bottom Navigation Bar -->
+    <include layout="@layout/bottomnavigation"/>
+</LinearLayout>

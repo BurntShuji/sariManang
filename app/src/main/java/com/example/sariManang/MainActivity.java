@@ -1,119 +1,145 @@
 package com.example.sariManang;
 
-import android.app.AlertDialog;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.core.content.ContextCompat;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * MainActivity handles the application's homepage dashboard.
+ * Displays date, store greeting, quick action buttons, today's sales summary, overdue utang list, and low stock warnings.
+ */
 public class MainActivity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+    protected void onCreate(Bundle b) {
+        super.onCreate(b);
         setContentView(R.layout.homepage);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        LinearLayout suppliersBtn = findViewById(R.id.suppliers_button);
-        if (suppliersBtn != null) {
-            suppliersBtn.setOnClickListener(v -> {
-                Intent intent = new Intent(MainActivity.this, SupplierActivity.class);
-                startActivity(intent);
-            });
+        // Section 1: Set current date and user greeting
+        ((TextView) findViewById(R.id.tvDate)).setText(new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()).format(new Date()));
+        String name = getIntent().getStringExtra("name");
+        if (name != null) {
+            ((TextView) findViewById(R.id.tvHello)).setText("Hello, " + name);
         }
 
-        Button btnNewSale = findViewById(R.id.btnNewSale);
-        Button btnRecordUtang = findViewById(R.id.btnRecordUtang);
-        Button btnAddStock = findViewById(R.id.btnAddStock);
+        // Section 2: Set up quick action listeners
+        findViewById(R.id.btnNewSale).setOnClickListener(v -> DialogHelper.showNewSale(this, (item, qty, price) -> {
+            SalesRepository.addSale(item, qty, price);
+            renderTodaySales();
+        }));
 
-        if (btnNewSale != null) {
-            btnNewSale.setOnClickListener(v -> showNewSaleDialog());
+        findViewById(R.id.btnRecordUtang).setOnClickListener(v -> DialogHelper.showRecordUtang(this, (customer, amount, date) -> {
+            UtangRepository.addUtang(customer, amount, date);
+            renderUtang();
+        }));
+
+        findViewById(R.id.btnAddStock).setOnClickListener(v -> DialogHelper.showAddStock(this, InventoryActivity.getExistingItemNames(), null));
+
+        // Section 3: Configure bottom navigation bar
+        NavigationHelper.setup(this, R.id.navHome);
+
+        // Section 4: Initial UI rendering
+        renderTodaySales();
+        renderUtang();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh dashboard data whenever activity returns to foreground
+        renderTodaySales();
+        renderUtang();
+    }
+
+    /** Calculates and updates "Today's Total Sales" and transaction count on homepage. */
+    private void renderTodaySales() {
+        TextView tvSales = findViewById(R.id.tvTodaySales);
+        TextView tvTrans = findViewById(R.id.tvTodayTransactions);
+
+        if (tvSales != null) {
+            tvSales.setText(String.format(Locale.US, "₱ %,.2f", SalesRepository.getTodayTotalSales()));
         }
-
-        if (btnRecordUtang != null) {
-            btnRecordUtang.setOnClickListener(v -> showRecordUtangDialog());
-        }
-
-        if (btnAddStock != null) {
-            btnAddStock.setOnClickListener(v -> showAddStockDialog());
+        if (tvTrans != null) {
+            int count = SalesRepository.getTodayTransactionCount();
+            tvTrans.setText(count + (count == 1 ? " transaction today" : " transactions today"));
         }
     }
 
-    private void showNewSaleDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View view = getLayoutInflater().inflate(R.layout.dialognewsale, null);
-        builder.setView(view);
+    /** Dynamically populates the unpaid and overdue utang list on homepage. */
+    private void renderUtang() {
+        LinearLayout container = findViewById(R.id.listOverdueUtang);
+        if (container == null) return;
+        container.removeAllViews();
 
-        AlertDialog dialog = builder.create();
+        List<Utang> list = UtangRepository.getUnpaidUtangList();
+        double total = 0;
+        int count = 0;
 
-        TextView btnClose = view.findViewById(R.id.btnCloseDialog);
-        if (btnClose != null) {
-            btnClose.setOnClickListener(v -> dialog.dismiss());
+        for (Utang u : list) {
+            total += u.amount;
+
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            row.setPadding(0, 8, 0, 8);
+            row.setGravity(Gravity.CENTER_VERTICAL);
+
+            TextView tvName = new TextView(this);
+            tvName.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            tvName.setText(u.customer);
+            tvName.setTextColor(ContextCompat.getColor(this, R.color.text_dark));
+            tvName.setTextSize(13);
+
+            TextView tvAmount = new TextView(this);
+            tvAmount.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            tvAmount.setText(String.format(Locale.US, "₱%,.2f", u.amount));
+            tvAmount.setTextColor(ContextCompat.getColor(this, R.color.text_dark));
+            tvAmount.setTextSize(13);
+            tvAmount.setPadding(0, 0, 24, 0);
+
+            TextView tvStatus = new TextView(this);
+            tvStatus.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            tvStatus.setText(u.getStatusText());
+            tvStatus.setTextSize(13);
+            tvStatus.setTypeface(null, android.graphics.Typeface.BOLD);
+
+            if (u.isOverdue()) {
+                tvStatus.setTextColor(ContextCompat.getColor(this, R.color.red_dark));
+            } else {
+                tvStatus.setTextColor(ContextCompat.getColor(this, R.color.text_dark));
+            }
+
+            row.addView(tvName);
+            row.addView(tvAmount);
+            row.addView(tvStatus);
+
+            container.addView(row);
+            count++;
         }
 
-        Button btnSubmit = view.findViewById(R.id.btnSubmitSale);
-        btnSubmit.setOnClickListener(v -> {
-            Toast.makeText(this, "Sale Recorded!", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-
-        dialog.show();
-    }
-
-    private void showRecordUtangDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View view = getLayoutInflater().inflate(R.layout.dialogrecordutang, null);
-        builder.setView(view);
-
-        AlertDialog dialog = builder.create();
-
-        TextView btnClose = view.findViewById(R.id.btnCloseDialog);
-        if (btnClose != null) {
-            btnClose.setOnClickListener(v -> dialog.dismiss());
+        if (count == 0) {
+            TextView empty = new TextView(this);
+            empty.setText("No pending utang");
+            empty.setTextColor(ContextCompat.getColor(this, R.color.muted));
+            empty.setTextSize(12);
+            empty.setPadding(0, 8, 0, 8);
+            container.addView(empty);
         }
 
-        Button btnSubmit = view.findViewById(R.id.btnSubmitUtang);
-        btnSubmit.setOnClickListener(v -> {
-            Toast.makeText(this, "Utang Recorded!", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-
-        dialog.show();
-    }
-
-    private void showAddStockDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View view = getLayoutInflater().inflate(R.layout.dialogaddstock, null);
-        builder.setView(view);
-
-        AlertDialog dialog = builder.create();
-
-        TextView btnClose = view.findViewById(R.id.btnCloseDialog);
-        if (btnClose != null) {
-            btnClose.setOnClickListener(v -> dialog.dismiss());
+        TextView tvSummary = findViewById(R.id.tvHomeUtangSummary);
+        if (tvSummary != null) {
+            tvSummary.setText(String.format(Locale.US, "Total: ₱%,.2f", total));
         }
-
-        Button btnSubmit = view.findViewById(R.id.btnSubmitStock);
-        btnSubmit.setOnClickListener(v -> {
-            Toast.makeText(this, "Stock Added!", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-
-        dialog.show();
     }
 }

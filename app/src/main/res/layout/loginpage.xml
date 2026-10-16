@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#FFFFFF" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:gravity="center_horizontal" android:orientation="vertical" android:padding="24dp">
+        <ImageView android:layout_width="220dp" android:layout_height="wrap_content"
+            android:layout_marginTop="60dp" android:adjustViewBounds="true" android:src="@drawable/logo"/>
+        <TextView android:id="@+id/tvTitle" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="48dp" android:text="Welcome!" android:textColor="@color/red_dark"
+            android:textSize="20sp" android:textStyle="bold"/>
+        <EditText android:id="@+id/etUser" style="@style/SariField" android:layout_marginTop="20dp"
+            android:hint="Email or Username" android:inputType="textEmailAddress"/>
+        <EditText android:id="@+id/etPassword" style="@style/SariField" android:hint="Password"
+            android:inputType="textPassword" android:paddingRight="48dp"/>
+        <ImageView android:id="@+id/ivEye" android:layout_width="24dp" android:layout_height="24dp"
+            android:layout_gravity="end" android:layout_marginTop="-36dp" android:layout_marginRight="14dp"
+            android:src="@android:drawable/ic_menu_view" android:tint="@color/red_dark"/>
+        <TextView android:id="@+id/tvHint" style="@style/SariMuted" android:layout_gravity="start"
+            android:layout_marginTop="14dp" android:text="8+ chars: Uppercase, Lowercase, Number &amp; Special char"
+            android:textSize="11sp"/>
+        <EditText android:id="@+id/etConfirm" style="@style/SariField" android:hint="Confirm Password"
+            android:inputType="textPassword" android:visibility="gone"/>
+        <TextView android:id="@+id/btnLogin" style="@style/SariButton" android:layout_marginTop="20dp" android:text="LOG IN"/>
+        <TextView android:id="@+id/tvSwitch" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="24dp" android:padding="8dp" android:text="Don't have an account? Sign Up"
+            android:textColor="@color/red_dark" android:textSize="13sp" android:textStyle="bold"/>
+    </LinearLayout>
+</ScrollView>

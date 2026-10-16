@@ -1,107 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@android:color/white"
-    android:orientation="vertical"
-    android:padding="20dp">
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:text="Record Utang"
-            android:textColor="#333333"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/btnCloseDialog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="4dp"
-            android:text="✕"
-            android:textColor="#888888"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-    </RelativeLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Customer Name"
-        android:textColor="#555555"
-        android:textSize="12sp" />
-
-    <EditText
-        android:id="@+id/etUtangCustomer"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginTop="4dp"
-        android:background="@android:drawable/editbox_background"
-        android:hint="e.g. Aling Nena"
-        android:paddingHorizontal="10dp"
-        android:textSize="14sp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Amount Owed (₱)"
-        android:textColor="#555555"
-        android:textSize="12sp" />
-
-    <EditText
-        android:id="@+id/etUtangAmount"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginTop="4dp"
-        android:background="@android:drawable/editbox_background"
-        android:inputType="numberDecimal"
-        android:paddingHorizontal="10dp"
-        android:textSize="14sp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Items / Notes"
-        android:textColor="#555555"
-        android:textSize="12sp" />
-
-    <EditText
-        android:id="@+id/etUtangNote"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginTop="4dp"
-        android:background="@android:drawable/editbox_background"
-        android:gravity="top|start"
-        android:hint="e.g. 2 Red Horse, 1 Lucky Me"
-        android:padding="8dp"
-        android:textSize="14sp" />
-
-    <Button
-        android:id="@+id/btnSubmitUtang"
-        android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="#E53935"
-        android:paddingHorizontal="24dp"
-        android:text="Save Utang"
-        android:textAllCaps="false"
-        android:textColor="@android:color/white"
-        android:textSize="12sp" />
-
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_rounded" android:orientation="vertical" android:padding="20dp">
+    <TextView android:id="@+id/tvDlgTitle" style="@style/SariLabel" android:text="Record Utang" android:textSize="17sp"/>
+    <EditText android:id="@+id/etCustomer" style="@style/SariField" android:hint="Customer name" android:inputType="textPersonName"/>
+    <EditText android:id="@+id/etAmount" style="@style/SariField" android:hint="Outstanding balance (₱)" android:inputType="numberDecimal"/>
+    <EditText android:id="@+id/etDate" style="@style/SariField" android:hint="Promised date of payment" android:inputType="text"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="18dp" android:orientation="horizontal" android:weightSum="2">
+        <TextView android:id="@+id/btnCancel" style="@style/SariPill" android:layout_width="0dp" android:layout_weight="1"
+            android:layout_marginRight="6dp" android:gravity="center" android:padding="12dp" android:text="Cancel"/>
+        <TextView android:id="@+id/btnSave" style="@style/SariButton" android:layout_width="0dp" android:layout_weight="1"
+            android:layout_marginLeft="6dp" android:text="Save"/>
+    </LinearLayout>
 </LinearLayout>
