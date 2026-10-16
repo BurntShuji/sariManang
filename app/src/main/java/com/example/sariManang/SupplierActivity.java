@@ -6,13 +6,21 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class SupplierActivity extends AppCompatActivity {
+
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private LinearLayout supplierListContainer;
     private int supplierCount = 1;
@@ -60,6 +68,8 @@ public class SupplierActivity extends AppCompatActivity {
         Button btnLogQuality = cardView.findViewById(R.id.btnLogQuality);
         if (btnLogQuality != null) {
             btnLogQuality.setOnClickListener(v -> showLogQualityDialog(name));
+
+
         }
 
         supplierListContainer.addView(cardView);
@@ -83,9 +93,26 @@ public class SupplierActivity extends AppCompatActivity {
             btnClose.setOnClickListener(v -> dialog.dismiss());
         }
 
+        EditText etGoodSupplies = findViewById(R.id.etGoodSupplies);
+        EditText etBadSupplies = findViewById(R.id.etBadSupplies);
+        EditText etComment = findViewById(R.id.etComment);
+
+
+
         Button btnSubmit = dialogView.findViewById(R.id.btnSubmitRating);
         if (btnSubmit != null) {
             btnSubmit.setOnClickListener(v -> {
+                int goodSupplies = Integer.parseInt(etGoodSupplies.getText().toString());
+                int badSupplies = Integer.parseInt(etBadSupplies.getText().toString());
+                String comment = etComment.getText().toString();
+
+                Map<String, Object> supplier = new HashMap<>();
+                supplier.put("CompanyName", supplierName);
+                supplier.put("GoodSupplies", goodSupplies);
+                supplier.put("BadSupplies", badSupplies);
+                supplier.put("Comment", comment);
+
+
                 Toast.makeText(this, "Rating Submitted for " + supplierName, Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             });
