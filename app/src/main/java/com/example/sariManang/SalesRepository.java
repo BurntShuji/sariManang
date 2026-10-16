@@ -8,7 +8,7 @@ import java.util.Locale;
 
 /**
  * Repository class for managing sales transaction records.
- * Provides central access to sales history and calculates daily sales metrics.
+ * Provides access to sales history and calculates daily sales metrics.
  */
 public class SalesRepository {
 

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Utility helper class for building and displaying input dialog pop-ups.
+ * helper class for building and displaying input dialog pop-ups.
  * Handles validation and delegates callback execution to listeners.
  */
 public class DialogHelper {
