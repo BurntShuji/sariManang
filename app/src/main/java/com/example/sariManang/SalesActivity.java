@@ -40,7 +40,7 @@ public class SalesActivity extends AppCompatActivity {
         }));
 
         findViewById(R.id.btnRecordUtang).setOnClickListener(v -> DialogHelper.showRecordUtang(this, (cust, amt, date) -> {
-            UtangRepository.addUtang(cust, amt, date);
+            UtangRepository.addUtang(this, cust, amt, date);
             renderUtang();
         }));
 
