@@ -41,6 +41,9 @@ public class LoginActivity extends AppCompatActivity {
       title.setText(signUp ? "Create your account" : "Welcome!");
       btn.setText(signUp ? "SIGN UP" : "LOG IN");
       sw.setText(signUp ? "Already have an account? Log In" : "Don't have an account? Sign Up");
+      user.setText("");
+      pass.setText("");
+      confirm.setText("");
       confirm.setVisibility(signUp ? android.view.View.VISIBLE : android.view.View.GONE);
     });
     btn.setOnClickListener(v -> {
@@ -55,9 +58,7 @@ public class LoginActivity extends AppCompatActivity {
       }
 
       if (signUp) {
-        user.setText("");
-        pass.setText("");
-        confirm.setText("");
+
         if (!p.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{8,}$")) {
           pass.setError("Needs 8+ chars with upper, lower, number & special char");
           return;
