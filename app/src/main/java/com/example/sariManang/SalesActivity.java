@@ -35,7 +35,7 @@ public class SalesActivity extends AppCompatActivity {
 
         // Section 2: Quick action button listeners
         findViewById(R.id.btnLogSale).setOnClickListener(v -> DialogHelper.showNewSale(this, (item, qty, price) -> {
-            SalesRepository.addSale(item, qty, price);
+            SalesRepository.addSale(this, item, qty, price);
             renderSales();
         }));
 
