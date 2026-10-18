@@ -73,8 +73,6 @@ public class SalesRepository {
         sale.put("item", item);
         sale.put("quantity", qty);
         sale.put("price", price);
-        sale.put("userID", currentUserID);
-
 
       FirebaseFirestore db = FirebaseFirestore.getInstance();
 
