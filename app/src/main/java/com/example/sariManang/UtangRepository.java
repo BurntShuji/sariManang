@@ -51,21 +51,23 @@ public class UtangRepository {
         utangList.add(0, new Utang(customer, amount, dueDate));
       String currentUserID = context.getSharedPreferences("MyUserPrefs", Context.MODE_PRIVATE)
           .getString("userid", null);
-      Map<String, Object> sale = new HashMap<>();
-      sale.put("customer", customer);
-      sale.put("amount", amount);
-      sale.put("dueDate", dueDate);
+      Map<String, Object> utang = new HashMap<>();
+      utang.put("customer", customer);
+      utang.put("amount", amount);
+      utang.put("dueDate", dueDate);
 
       FirebaseFirestore db = FirebaseFirestore.getInstance();
 
       db.collection("user").document(currentUserID).collection("debt")
-          .add(sale)
+          .add(utang)
           .addOnSuccessListener(documentReference -> {
             Log.d(TAG, "utang added with ID: " + documentReference.getId());
           })
           .addOnFailureListener(e -> {
             Log.w(TAG, "Error adding sale", e);
           });
+
+
     }
 
     /** Marks a customer utang record as paid/settled. */
