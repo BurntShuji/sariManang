@@ -1,6 +1,5 @@
 package com.example.sariManang;
 import static android.content.ContentValues.TAG;
-import static java.lang.reflect.Array.set;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,8 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -75,23 +72,14 @@ public class LoginActivity extends AppCompatActivity {
         String userID = db.collection("user").document().getId();
         db.collection("user").document(userID)
             .set(credens)
-            .addOnSuccessListener(new OnSuccessListener<Void>() {
-              @Override
-              public void onSuccess(Void aVoid) {
-                Toast.makeText(LoginActivity.this, "Sign up successful!", Toast.LENGTH_SHORT).show();
-                Intent in = new Intent(LoginActivity.this, MainActivity.class);
-                sw.performClick();
-                user.setText("");
-                pass.setText("");
-                confirm.setText("");
-              }
+            .addOnSuccessListener(aVoid -> {
+              Toast.makeText(LoginActivity.this, "Sign up successful!", Toast.LENGTH_SHORT).show();
+              sw.performClick();
+              user.setText("");
+              pass.setText("");
+              confirm.setText("");
             })
-            .addOnFailureListener(new OnFailureListener() {
-              @Override
-              public void onFailure(@NonNull Exception e) {
-                Log.w(TAG, "Error writing document", e);
-              }
-            });
+            .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
 
       }
       else{
@@ -110,6 +98,12 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(LoginActivity.this, "Welcome! ID: " + documentId, Toast.LENGTH_SHORT).show();
                 Intent in = new Intent(this, MainActivity.class);
                 in.putExtra("name", u.contains("@") ? u.substring(0, u.indexOf('@')) : u);
+                getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
+                    .edit()
+                    .putString("userid", documentId)
+                    .apply();
+
+
                 startActivity(in);
                 finish();
               } else {

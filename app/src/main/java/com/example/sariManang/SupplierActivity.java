@@ -29,8 +29,11 @@ public class SupplierActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle b) {
+
         super.onCreate(b);
         setContentView(R.layout.supplierpage);
+      String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
+          .getString("userid", null);
 
         // Section 1: Toolbar & Navigation setup
         NavigationHelper.setupToolbar(this, "Suppliers");

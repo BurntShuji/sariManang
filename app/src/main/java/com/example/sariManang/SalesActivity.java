@@ -26,6 +26,8 @@ public class SalesActivity extends AppCompatActivity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         setContentView(R.layout.salespage);
+      String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
+          .getString("userid", null);
 
         // Section 1: Set up toolbar and navigation
         NavigationHelper.setupToolbar(this, "Sales");

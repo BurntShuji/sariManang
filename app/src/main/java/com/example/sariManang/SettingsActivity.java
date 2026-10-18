@@ -20,6 +20,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle b) {
+      String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
+          .getString("userid", null);
         super.onCreate(b);
         setContentView(R.layout.settingspage);
 
