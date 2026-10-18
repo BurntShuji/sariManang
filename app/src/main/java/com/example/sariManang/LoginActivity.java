@@ -104,6 +104,10 @@ public class LoginActivity extends AppCompatActivity {
                     .putString("userid", documentId)
                     .apply();
 
+                userIDManager session = new userIDManager(LoginActivity.this);
+                session.saveUserId(documentId);
+
+
 
                 startActivity(in);
                 finish();
