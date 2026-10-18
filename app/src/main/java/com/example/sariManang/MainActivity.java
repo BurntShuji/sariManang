@@ -22,8 +22,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         setContentView(R.layout.homepage);
-      String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
-          .getString("userid", null);
 
         // Section 1: Set current date and user greeting
         ((TextView) findViewById(R.id.tvDate)).setText(new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()).format(new Date()));

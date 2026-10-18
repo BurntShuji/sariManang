@@ -1,11 +1,15 @@
 package com.example.sariManang;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.CheckBox;
@@ -14,8 +18,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * SupplierActivity manages the store's suppliers list, favorite suppliers, delivery quality ratings,
@@ -23,7 +32,7 @@ import java.util.Locale;
  */
 public class SupplierActivity extends AppCompatActivity {
 
-    private final ArrayList<Supplier> suppliers = new ArrayList<>();
+    private final List<Supplier> suppliers = new ArrayList<>();
     private LinearLayout list, favs;
     private EditText search;
 
@@ -32,8 +41,6 @@ public class SupplierActivity extends AppCompatActivity {
 
         super.onCreate(b);
         setContentView(R.layout.supplierpage);
-      String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
-          .getString("userid", null);
 
         // Section 1: Toolbar & Navigation setup
         NavigationHelper.setupToolbar(this, "Suppliers");
@@ -58,13 +65,12 @@ public class SupplierActivity extends AppCompatActivity {
         // Section 4: Add supplier listener
         findViewById(R.id.btnAddSupplier).setOnClickListener(v -> DialogHelper.showAddSupplier(this,
                 (n, c) -> {
-                    suppliers.add(0, new Supplier(n, c.isEmpty() ? "No contact" : c, 0, 0, false));
-                    render();
+                suppliers.add(0, new Supplier(n, c.isEmpty() ? "No contact" : c, 0, 0, false));
+                addSupplier(this, n, c.isEmpty() ? "No contact" : c);
+                render();
                 }));
-
-        // Section 5: Initial render
-        render();
     }
+
 
     /** Renders the list of suppliers and favorite supplier circle icons. */
     private void render() {
@@ -137,5 +143,30 @@ public class SupplierActivity extends AppCompatActivity {
         c.addView(a);
         c.addView(n);
         favs.addView(c);
+    }
+
+
+    public void addSupplier(Context context, String supplier, String contact){
+      String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
+          .getString("userid", null);
+      suppliers.add(0, new Supplier(supplier, contact, 0,0,false));
+      Map<String, Object> utang = new HashMap<>();
+      utang.put("supplier", supplier);
+      utang.put("contact", contact);
+      utang.put("good", 0);
+      utang.put("bad", 0);
+      utang.put("favorite", false);
+
+      FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+      db.collection("user").document(currentUserID).collection("suppliers")
+          .add(utang)
+          .addOnSuccessListener(documentReference -> {
+            Log.d(TAG, "utang added with ID: " + documentReference.getId());
+          })
+          .addOnFailureListener(e -> {
+            Log.w(TAG, "Error adding sale", e);
+          });
+
     }
 }
