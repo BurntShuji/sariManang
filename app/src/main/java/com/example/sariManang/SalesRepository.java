@@ -12,6 +12,7 @@ import java.util.Locale;
  */
 public class SalesRepository {
 
+
     /** Model representing an individual sale record. */
     public static class SaleRecord {
         public String date;
@@ -54,6 +55,7 @@ public class SalesRepository {
     /** Adds a new sale transaction. */
     public static void addSale(String item, int qty, double price) {
         records.add(0, new SaleRecord(getTodayFormatted(), item, qty, price));
+
     }
 
     /** Calculates total sales amount for today. */
