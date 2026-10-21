@@ -3,8 +3,11 @@ package com.example.sariManang;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 public class userIDManager {
-    private final String name = "MyUserPrefs";
+
+  private final String name = "MyUserPrefs";
     private final String userID = "userID";
 
     private SharedPreferences sharedPreferences;
@@ -28,5 +31,8 @@ public class userIDManager {
       editor.clear();
       editor.apply();
     }
+
+
+
 
   }

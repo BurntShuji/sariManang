@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -49,16 +51,13 @@ public class InventoryActivity extends AppCompatActivity {
         }
     }
 
-    private static final List<Item> items = new ArrayList<>();
+    private userIDManager user;
+    private String userid;
 
-    static {
-        // Initial sample inventory data
-        items.add(new Item("Always Ultra Thin", 4, 62.0, "2028-01-10", "B-0312", 5));
-        items.add(new Item("Nestle All-Purpose Cream", 10, 28.0, "2026-11-02", "B-0754", 4));
-        items.add(new Item("Pocari Sweat", 24, 36.5, "2027-03-14", "B-0987", 6));
-        items.add(new Item("Selecta Ice Cream", 2, 85.0, "2026-11-30", "B-1021", 5));
-        sortItemsAlphabetically();
-    }
+    private dbManager db = new dbManager();
+
+
+    private static final List<Item> items = new ArrayList<>();
 
     private LinearLayout list;
     private EditText search;
@@ -72,6 +71,33 @@ public class InventoryActivity extends AppCompatActivity {
         return names;
     }
 
+    private void loadItems(){
+      db.getInv(userid, null)
+          .addOnSuccessListener(snapshot -> {
+            items.clear();
+
+            for(int i = 0; i < snapshot.getDocuments().size(); i++){
+              DocumentSnapshot doc = snapshot.getDocuments().get(i);
+
+                String name = doc.getString("item");
+                Long quantity =doc.getLong("quantity");
+                int qty = quantity != null ? quantity.intValue() : 0;
+                Double price = doc.getDouble("price");
+                double price1 = price != null ? price : 0.0;
+                String expiry = doc.getString("expiry");
+                String batch = doc.getString("batch");
+                Long alertAt = doc.getLong("alertAt");
+                int alert = alertAt != null ? alertAt.intValue() : 0;
+
+
+              items.add(new Item(name, qty, price, expiry, batch, alert));
+
+            }
+
+            render();
+
+          });
+    }
     /** Sorts the inventory items list in alphabetical order by item name. */
     private static void sortItemsAlphabetically() {
         Collections.sort(items, (a, b) -> a.name.compareToIgnoreCase(b.name));
@@ -80,6 +106,8 @@ public class InventoryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+        user = new userIDManager(InventoryActivity.this);
+        userid = user.getUserID();
         setContentView(R.layout.inventorypage);
 
         // Section 1: Toolbar & Navigation setup
@@ -107,7 +135,7 @@ public class InventoryActivity extends AppCompatActivity {
         ));
 
         // Section 4: Initial render
-        render();
+        loadItems();
     }
 
     /**

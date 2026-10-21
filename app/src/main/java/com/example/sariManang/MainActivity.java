@@ -1,6 +1,9 @@
 package com.example.sariManang;
 
+import static android.content.ContentValues.TAG;
+
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -21,14 +24,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+
+        dbManager DBHelper = new dbManager();
+        userIDManager userid = new userIDManager(MainActivity.this);
         setContentView(R.layout.homepage);
+
+        String user = userid.getUserID();
+
 
         // Section 1: Set current date and user greeting
         ((TextView) findViewById(R.id.tvDate)).setText(new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()).format(new Date()));
-        String name = getIntent().getStringExtra("name");
-        if (name != null) {
-            ((TextView) findViewById(R.id.tvHello)).setText("Hello, " + name);
-        }
+        DBHelper.getFromUsers(user, "username")
+            .addOnSuccessListener(result -> {
+              ((TextView) findViewById(R.id.tvHello)).setText("Hello, " + result);
+            })
+            .addOnFailureListener(e -> {
+              Log.e(TAG, "Failed to get username", e);
+            });
 
         // Section 2: Set up quick action listeners
         findViewById(R.id.btnNewSale).setOnClickListener(v -> DialogHelper.showNewSale(this, (item, qty, price) -> {
