@@ -166,19 +166,19 @@ public class DialogHelper {
 
       //Real-time price calculation
       // FORMULA: price = cost + (cost * markup)
-      TextWatcher priceWatcher = new TextWatcher() {
-          public void beforeTextChanged(CharSequence a, int b, int c2, int d2) {}
-          public void onTextChanged(CharSequence a, int b, int c2, int d2) {}
-          public void afterTextChanged(Editable e) {
+      TextWatcher priceWatcher = new TextWatcher() { //Para sa real-time edits
+          public void beforeTextChanged(CharSequence a, int start, int b4, int count) {} //Walang laman kasi wala naman need gawin dyan
+          public void onTextChanged(CharSequence a, int start, int b4, int count) {} //Same din dine
+          public void afterTextChanged(Editable e) { //Here ang live modifications
               if (cost != null && markup != null && price != null) {
                   double costVal = num(cost);
                   double markupVal = num(markup);
-                  double selPrice = costVal + (costVal * markupVal);
+                  double selPrice = costVal + (costVal * markupVal); //Simplified formula 'to ng markup
                   price.setText(String.format(Locale.US, "Price: ₱%,.2f", selPrice));
               }
           }
       };
-
+        //Pang check ng inputs para sa live modification
         if(cost != null) cost.addTextChangedListener(priceWatcher);
         if (markup != null) markup.addTextChangedListener(priceWatcher);
 
@@ -188,7 +188,7 @@ public class DialogHelper {
         if (btnSave != null) {
             btnSave.setOnClickListener(v -> {
                 if (!req(item, qty, cost, alert)) return;
-                //Calculation of price
+                //Calculation of price (nilagay ko d2 para mare-eval & masave siya)
                 double costVal = num(cost);
                 double markupVal = num(markup);
                 double selPrice = costVal + (costVal * markupVal);
