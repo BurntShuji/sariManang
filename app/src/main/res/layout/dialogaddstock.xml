@@ -42,19 +42,20 @@
             android:hint="Markup (%)"
             android:inputType="numberDecimal" />
 
-        <EditText
-            android:id="@+id/etPrice"
+        <TextView
+            android:id="@+id/tvPrice"
             style="@style/SariField"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_marginStart="3dp"
+            android:background="#F0F0F0"
+            android:textColor="#666666"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:textSize="12sp"
             android:singleLine="true"
-            android:enabled="false"
-            android:hint="Selling Price (₱)"
-            android:inputType="numberDecimal" />
+            android:gravity="center_vertical"
+            android:text="Price: ₱0.00" />
     </LinearLayout>
 
     <EditText android:id="@+id/etExpiry" style="@style/SariField" android:hint="Expiration date" android:inputType="text"/>
