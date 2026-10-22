@@ -151,21 +151,48 @@ public class DialogHelper {
     public static void showAddStock(Context c, List<String> suggestions, StockListener l) {
         AlertDialog d = open(c, R.layout.dialogaddstock);
         AutoCompleteTextView item = d.findViewById(R.id.etItem);
-        EditText qty = d.findViewById(R.id.etQty), price = d.findViewById(R.id.etPrice),
-                exp = d.findViewById(R.id.etExpiry), batch = d.findViewById(R.id.etBatch), alert = d.findViewById(R.id.etAlert);
+        EditText qty = d.findViewById(R.id.etQty),
+                 exp = d.findViewById(R.id.etExpiry),
+                 batch = d.findViewById(R.id.etBatch),
+                 alert = d.findViewById(R.id.etAlert),
+                 markup = d.findViewById(R.id.etMarkup),
+                 cost = d.findViewById(R.id.etCost);
+        TextView price = d.findViewById(R.id.tvPrice);
 
         if (item != null && suggestions != null && !suggestions.isEmpty()) {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(c, android.R.layout.simple_dropdown_item_1line, suggestions);
             item.setAdapter(adapter);
         }
 
-        datePicker(c, exp);
+      //Real-time price calculation
+      // FORMULA: price = cost + (cost * markup)
+      TextWatcher priceWatcher = new TextWatcher() {
+          public void beforeTextChanged(CharSequence a, int b, int c2, int d2) {}
+          public void onTextChanged(CharSequence a, int b, int c2, int d2) {}
+          public void afterTextChanged(Editable e) {
+              if (cost != null && markup != null && price != null) {
+                  double costVal = num(cost);
+                  double markupVal = num(markup);
+                  double selPrice = costVal + (costVal * markupVal);
+                  price.setText(String.format(Locale.US, "Price: ₱%,.2f", selPrice));
+              }
+          }
+      };
+
+        if(cost != null) cost.addTextChangedListener(priceWatcher);
+        if (markup != null) markup.addTextChangedListener(priceWatcher);
+
+      datePicker(c, exp);
 
         TextView btnSave = d.findViewById(R.id.btnSave);
         if (btnSave != null) {
             btnSave.setOnClickListener(v -> {
-                if (!req(item, qty, price, alert)) return;
-                if (l != null) l.onStock(s(item), (int) num(qty), num(price), s(exp), s(batch), (int) num(alert));
+                if (!req(item, qty, cost, alert)) return;
+                //Calculation of price
+                double costVal = num(cost);
+                double markupVal = num(markup);
+                double selPrice = costVal + (costVal * markupVal);
+                if (l != null) l.onStock(s(item), (int) num(qty), selPrice, s(exp), s(batch), (int) num(alert));
                 Toast.makeText(c, "Stock added", Toast.LENGTH_SHORT).show();
                 d.dismiss();
             });
