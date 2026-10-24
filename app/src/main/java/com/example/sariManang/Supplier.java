@@ -19,18 +19,20 @@ public class Supplier {
         this.favorite = favorite;
     }
 
-    /** Returns total number of delivery quality logs. */
-    public int total() {
-        return good + bad;
+    public int total() { //total deliveries
+      return good + bad;
     }
 
-    /** Returns percentage of good quality deliveries. */
-    public int percentGood() {
-        return total() == 0 ? 0 : Math.round(good * 100f / total());
+    public int percentGood() { //% of good quality
+      return total() == 0 ? 0 : Math.round(good * 100f / total());
     }
 
-    /** Calculates 0-5 star rating based on good vs bad delivery ratio. */
-    public int stars() {
-        return total() == 0 ? 0 : Math.round(good * 5f / total());
+    //FORMULA: double avgRate = (totGood/(totGood + totBad) * 5);
+    public double stars() { //para possible half-star ratings
+      if(total() ==0){
+        return 0;
+      }
+      double avgRate = ((double) good / total()) * 5.0;
+      return Math.round(avgRate * 2.0) / 2.0; //round avgRate sa pinakamalapit na half-star increment
     }
 }

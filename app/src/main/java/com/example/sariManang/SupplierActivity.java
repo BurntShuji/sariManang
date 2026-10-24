@@ -92,9 +92,31 @@ public class SupplierActivity extends AppCompatActivity {
                     : String.format(Locale.US, "%d%% Good / %d%% Bad", s.percentGood(), 100 - s.percentGood()));
 
             // Render star rating
-            SpannableString stars = new SpannableString("★★★★★");
-            stars.setSpan(new ForegroundColorSpan(0xFFF9A825), 0, s.stars(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            stars.setSpan(new ForegroundColorSpan(0xFFBDBDBD), s.stars(), 5, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            double rating = s.stars();
+            int fullStars = (int) rating;
+            boolean hasHalfStar = (rating - fullStars) >= 0.5;
+            int emptyStars = 5 - fullStars;
+            if(hasHalfStar){ //fall star vs half star computation
+              --emptyStars;
+            }
+            //String rep ng star
+            StringBuilder starBuilder = new StringBuilder();
+            for(int i = 0; i < fullStars; ++i){
+              starBuilder.append("★");
+            }
+            if(hasHalfStar){
+              starBuilder.append("½");
+            }
+            for(int i = 0; i < emptyStars; ++i){
+              starBuilder.append("☆");
+            }
+            SpannableString stars = new SpannableString(starBuilder.toString());
+            int activeLength = fullStars;
+            if(hasHalfStar){
+              ++activeLength;
+            }
+            stars.setSpan(new ForegroundColorSpan(0xFFF9A825), 0, activeLength, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            stars.setSpan(new ForegroundColorSpan(0xFFBDBDBD), activeLength, 5, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             ((TextView) v.findViewById(R.id.tvStars)).setText(stars);
 
             // Toggle favorite status
