@@ -26,6 +26,8 @@ public class SalesActivity extends AppCompatActivity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         setContentView(R.layout.salespage);
+      String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
+          .getString("userid", null);
 
         // Section 1: Set up toolbar and navigation
         NavigationHelper.setupToolbar(this, "Sales");
@@ -33,12 +35,12 @@ public class SalesActivity extends AppCompatActivity {
 
         // Section 2: Quick action button listeners
         findViewById(R.id.btnLogSale).setOnClickListener(v -> DialogHelper.showNewSale(this, (item, qty, price) -> {
-            SalesRepository.addSale(item, qty, price);
+            SalesRepository.addSale(this, item, qty, price);
             renderSales();
         }));
 
         findViewById(R.id.btnRecordUtang).setOnClickListener(v -> DialogHelper.showRecordUtang(this, (cust, amt, date) -> {
-            UtangRepository.addUtang(cust, amt, date);
+            UtangRepository.addUtang(this, cust, amt, date);
             renderUtang();
         }));
 

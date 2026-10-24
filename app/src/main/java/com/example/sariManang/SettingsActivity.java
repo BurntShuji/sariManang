@@ -20,6 +20,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle b) {
+      String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
+          .getString("userid", null);
         super.onCreate(b);
         setContentView(R.layout.settingspage);
 
@@ -51,6 +53,8 @@ public class SettingsActivity extends AppCompatActivity {
         // Section 4: Logout listener
         findViewById(R.id.btnLogout).setOnClickListener(v -> {
             Intent in = new Intent(this, LoginActivity.class);
+            userIDManager userIDManager = new userIDManager(SettingsActivity.this);
+            userIDManager.logout();
             in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(in);
         });

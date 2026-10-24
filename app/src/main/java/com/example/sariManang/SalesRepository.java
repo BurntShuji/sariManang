@@ -1,16 +1,28 @@
 package com.example.sariManang;
 
+import static android.content.ContentValues.TAG;
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
+
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Repository class for managing sales transaction records.
  * Provides access to sales history and calculates daily sales metrics.
  */
 public class SalesRepository {
+
 
     /** Model representing an individual sale record. */
     public static class SaleRecord {
@@ -52,8 +64,27 @@ public class SalesRepository {
     }
 
     /** Adds a new sale transaction. */
-    public static void addSale(String item, int qty, double price) {
+    public static void addSale(Context context, String item, int qty, double price) {
         records.add(0, new SaleRecord(getTodayFormatted(), item, qty, price));
+      String currentUserID = context.getSharedPreferences("MyUserPrefs", Context.MODE_PRIVATE)
+          .getString("userid", null);
+      Map<String, Object> sale = new HashMap<>();
+        sale.put("date", getTodayFormatted());
+        sale.put("item", item);
+        sale.put("quantity", qty);
+        sale.put("price", price);
+
+      FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+      db.collection("user").document(currentUserID).collection("sales")
+          .add(sale)
+          .addOnSuccessListener(documentReference -> {
+            Log.d(TAG, "Sale added with ID: " + documentReference.getId());
+          })
+          .addOnFailureListener(e -> {
+            Log.w(TAG, "Error adding sale", e);
+          });
+
     }
 
     /** Calculates total sales amount for today. */

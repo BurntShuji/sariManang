@@ -2,13 +2,66 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="wrap_content"
     android:background="@drawable/bg_dialog_rounded" android:orientation="vertical" android:padding="20dp">
+
     <TextView android:id="@+id/tvDlgTitle" style="@style/SariLabel" android:text="Add Stock" android:textSize="17sp"/>
+
     <AutoCompleteTextView android:id="@+id/etItem" style="@style/SariField" android:hint="Item name" android:inputType="text" android:completionThreshold="1"/>
     <EditText android:id="@+id/etQty" style="@style/SariField" android:hint="Current stock" android:inputType="number"/>
-    <EditText android:id="@+id/etPrice" style="@style/SariField" android:hint="Price (₱)" android:inputType="numberDecimal"/>
+
+    <!-- Pricing (Don't delete this comment pls -Irys) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <EditText
+            android:id="@+id/etCost"
+            style="@style/SariField"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="3dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textSize="12sp"
+            android:singleLine="true"
+            android:hint="Item Cost (₱)"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/etMarkup"
+            style="@style/SariField"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_marginStart="3dp"
+            android:layout_marginEnd="3dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textSize="12sp"
+            android:singleLine="true"
+            android:hint="Markup (%)"
+            android:inputType="numberDecimal" />
+
+        <TextView
+            android:id="@+id/tvPrice"
+            style="@style/SariField"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_marginStart="3dp"
+            android:background="#F0F0F0"
+            android:textColor="#666666"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textSize="12sp"
+            android:singleLine="true"
+            android:gravity="center_vertical"
+            android:text="Price: ₱0.00" />
+    </LinearLayout>
+
     <EditText android:id="@+id/etExpiry" style="@style/SariField" android:hint="Expiration date" android:inputType="text"/>
     <EditText android:id="@+id/etBatch" style="@style/SariField" android:hint="Batch number" android:inputType="text"/>
     <EditText android:id="@+id/etAlert" style="@style/SariField" android:hint="Alert me when stock drops to" android:inputType="number"/>
+
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_marginTop="18dp" android:orientation="horizontal" android:weightSum="2">
         <TextView android:id="@+id/btnCancel" style="@style/SariPill" android:layout_width="0dp" android:layout_weight="1"

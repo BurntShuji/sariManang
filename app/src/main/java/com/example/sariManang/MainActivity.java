@@ -32,12 +32,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Section 2: Set up quick action listeners
         findViewById(R.id.btnNewSale).setOnClickListener(v -> DialogHelper.showNewSale(this, (item, qty, price) -> {
-            SalesRepository.addSale(item, qty, price);
+            SalesRepository.addSale(this, item, qty, price);
             renderTodaySales();
         }));
 
         findViewById(R.id.btnRecordUtang).setOnClickListener(v -> DialogHelper.showRecordUtang(this, (customer, amount, date) -> {
-            UtangRepository.addUtang(customer, amount, date);
+            UtangRepository.addUtang(this, customer, amount, date);
             renderUtang();
         }));
 

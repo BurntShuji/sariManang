@@ -1,10 +1,14 @@
 package com.example.sariManang;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
@@ -12,11 +16,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -93,7 +101,7 @@ public class InventoryActivity extends AppCompatActivity {
                 this,
                 getExistingItemNames(),
                 (n, q, p, e, bt, a) -> {
-                    addOrUpdateStockItem(n, q, p, e, bt, a);
+                    addOrUpdateStockItem(this, n, q, p, e, bt, a);
                     render();
                 }
         ));
@@ -106,8 +114,11 @@ public class InventoryActivity extends AppCompatActivity {
      * Adds a new stock item or updates quantity/details if the item already exists in inventory.
      * Maintains alphabetical order.
      */
-    private void addOrUpdateStockItem(String name, int qty, double price, String expiry, String batch, int alertAt) {
-        boolean exists = false;
+    private void addOrUpdateStockItem(Context context, String name, int qty, double price, String expiry, String batch, int alertAt) {
+      String currentUserID = context.getSharedPreferences("MyUserPrefs", Context.MODE_PRIVATE)
+          .getString("userid", null);
+
+      boolean exists = false;
         for (Item item : items) {
             if (item.name.equalsIgnoreCase(name.trim())) {
                 item.qty += qty;
@@ -122,6 +133,25 @@ public class InventoryActivity extends AppCompatActivity {
         if (!exists) {
             items.add(new Item(name.trim(), qty, price, expiry, batch, alertAt));
         }
+
+      Map<String, Object> stock = new HashMap<>();
+      stock.put("item", name.trim());
+      stock.put("quantity", qty);
+      stock.put("price", price);
+      stock.put("expiry", expiry);
+      stock.put("batch", batch);
+      stock.put("alertAt", alertAt);
+
+      FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+      db.collection("user").document(currentUserID).collection("stock")
+          .add(stock)
+          .addOnSuccessListener(documentReference -> {
+            Log.d(TAG, "stock added with ID: " + documentReference.getId());
+          })
+          .addOnFailureListener(e -> {
+            Log.w(TAG, "Error adding stock", e);
+          });
         sortItemsAlphabetically();
     }
 
