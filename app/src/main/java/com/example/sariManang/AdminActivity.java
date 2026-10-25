@@ -1,0 +1,136 @@
+package com.example.sariManang;
+
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Patterns;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Random;
+
+public class AdminActivity extends AppCompatActivity {
+    static class User {
+        int id; String name, email; long lastActive;
+        User(int i, String n, String e, long l) { id = i; name = n; email = e; lastActive = l; }
+    }
+
+
+    private final ArrayList<User> all = new ArrayList<>(), shown = new ArrayList<>();
+    private final SimpleDateFormat fmt = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
+    private BaseAdapter adapter;
+    private EditText search;
+
+
+    @Override
+    protected void onCreate(Bundle b) {
+        super.onCreate(b);
+        setContentView(R.layout.adminpage);
+        ((TextView) findViewById(R.id.tbTitle)).setText("Admin");
+        findViewById(R.id.tbBack).setOnClickListener(v -> finish());
+        search = findViewById(R.id.etSearch);
+
+        //placeholder names for testing
+        String[] names = {"Zoe Angela Praise", "Natsu Dragneel", "Naruto Uzumaki", "Jose Rizal", "Andres Bonifacio",
+                "Karissa Laroza", "Apolinario Mabini", "Toph Beifong", "Emilio Aguinaldo", "Irys Landicho",
+                "Light Yagami", "Corazon Ramos", "Ramon Magsaysay", "Astro Boy", "Remy Ratatoui", "Awesome friend",
+                "Gangnam Style", "Sailor Moon", "Mang Tomas", "Monkey Luffy", "Eren Yeager",
+                "Lelouch Lamperouge", "Satoru Gojo", "Itadori Yuji", "Kakashi Hatake", "Harry Potter", "Hermione Granger",
+                "Ron Weasley", "Sirius Black", "Hazel Levesque", "Nico Di ANgelo", "Percy Jackson", "Regulus Black",
+                "Remus Lupin", "Avatar Aang", "James Potter", "Neville Longbottom", "Jason Grace", "Addie La Rue", "Dean Thomas"};
+
+        Random rnd = new Random(7);
+        for (int i = 0; i < names.length; i++) {
+          //random email generator based sa names
+            String email = names[i].toLowerCase().replaceAll("[^a-z ]", "").replace(" ", ".") + "@gmail.com";
+            //new user object with id, name, email, and random last active date
+            all.add(new User(i + 1, names[i], email, System.currentTimeMillis() - rnd.nextInt(90) * 86400000L));
+        }
+
+
+        ListView lv = findViewById(R.id.lvUsers);
+        lv.setEmptyView(findViewById(R.id.tvEmpty));
+
+        //display each user
+        adapter = new BaseAdapter() {
+            public int getCount() { return shown.size(); }
+            public Object getItem(int p) { return shown.get(p); }
+            public long getItemId(int p) { return shown.get(p).id; }
+            public View getView(int p, View v, ViewGroup parent) {
+                if (v == null) v = getLayoutInflater().inflate(R.layout.itemuser, parent, false);
+                User u = shown.get(p);
+                ((TextView) v.findViewById(R.id.tvId)).setText(String.valueOf(u.id));
+                ((TextView) v.findViewById(R.id.tvUser)).setText(u.name);
+                ((TextView) v.findViewById(R.id.tvEmail)).setText(u.email);
+                ((TextView) v.findViewById(R.id.tvLast)).setText(fmt.format(new Date(u.lastActive)));
+                v.findViewById(R.id.ivEdit).setOnClickListener(x -> showEdit(u));
+                v.findViewById(R.id.ivDelete).setOnClickListener(x -> confirmDelete(u));
+                return v;
+            }
+        };
+        // listens sa seach box and refreshes to update and filter list
+        lv.setAdapter(adapter);
+        search.addTextChangedListener(new TextWatcher() {
+            public void beforeTextChanged(CharSequence a, int x, int y, int z) {}
+            public void onTextChanged(CharSequence a, int x, int y, int z) {}
+            public void afterTextChanged(Editable e) { refresh(); }
+        });
+        refresh();
+    }
+
+    // gets inputted search, clears and filters list
+    private void refresh() {
+        String q = search.getText().toString().toLowerCase().trim();
+        shown.clear();
+        for (User u : all) {
+            if (u.name.toLowerCase().contains(q) || u.email.toLowerCase().contains(q)) shown.add(u);
+        }
+        adapter.notifyDataSetChanged();
+    }
+
+
+    // edit user
+    private void showEdit(User u) {
+        AlertDialog d = new AlertDialog.Builder(this).setView(R.layout.dialogedituser).create();
+        d.show();
+        d.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        EditText name = d.findViewById(R.id.etName), email = d.findViewById(R.id.etEmail);
+        ((TextView) d.findViewById(R.id.tvUserId)).setText("User ID: " + u.id);
+        name.setText(u.name);
+        email.setText(u.email);
+        d.findViewById(R.id.btnCancel).setOnClickListener(v -> d.dismiss());
+        d.findViewById(R.id.btnSave).setOnClickListener(v -> {
+            String n = name.getText().toString().trim(), e = email.getText().toString().trim();
+            if (n.isEmpty()) { name.setError("Required"); return; }
+            if (!Patterns.EMAIL_ADDRESS.matcher(e).matches()) { email.setError("Enter a valid email"); return; }
+            u.name = n;
+            u.email = e;
+            refresh();
+            Toast.makeText(this, "User updated", Toast.LENGTH_SHORT).show();
+            d.dismiss();
+        });
+    }
+
+    //confirm delete
+    private void confirmDelete(User u) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete user?")
+                .setMessage("Remove " + u.name + " (ID " + u.id + ")? This cannot be undone.")
+                .setPositiveButton("Delete", (d, w) -> {
+                    all.remove(u);
+                    refresh();
+                    Toast.makeText(this, "User deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null).show();
+    }
+}

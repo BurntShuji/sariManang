@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg" android:fitsSystemWindows="true" android:orientation="vertical">
+    <include layout="@layout/toolbar"/>
+
+    <TextView style="@style/SariLabel" android:layout_marginLeft="16dp" android:layout_marginTop="14dp"
+        android:text="User Directory" android:textSize="17sp"/>
+    <EditText android:id="@+id/etSearch" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_margin="12dp" android:background="@drawable/bg_search_pill"
+        android:drawableLeft="@android:drawable/ic_menu_search" android:drawablePadding="8dp"
+        android:hint="Search name or email here." android:inputType="text" android:padding="12dp"
+        android:singleLine="true" android:textColor="@color/text_dark" android:textColorHint="@color/muted" android:textSize="13sp"/>
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:background="#E0E0E0"
+        android:orientation="horizontal" android:padding="10dp" android:weightSum="7">
+        <TextView style="@style/SariLabel" android:layout_width="0dp" android:layout_weight="0.7" android:text="Id"/>
+        <TextView style="@style/SariLabel" android:layout_width="0dp" android:layout_weight="1.7" android:text="User"/>
+        <TextView style="@style/SariLabel" android:layout_width="0dp" android:layout_weight="2.1" android:text="Email"/>
+        <TextView style="@style/SariLabel" android:layout_width="0dp" android:layout_weight="1.3" android:text="Last Active"/>
+        <TextView style="@style/SariLabel" android:layout_width="0dp" android:layout_weight="1.2" android:gravity="center" android:text="Action"/>
+    </LinearLayout>
+
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:background="#FFFFFF">
+        <ListView android:id="@+id/lvUsers" android:layout_width="match_parent" android:layout_height="match_parent"
+            android:divider="#E5E5E5" android:dividerHeight="1dp" android:scrollbars="vertical"/>
+        <TextView android:id="@+id/tvEmpty" style="@style/SariMuted" android:layout_gravity="center" android:text="No users found"/>
+    </FrameLayout>
+</LinearLayout>
