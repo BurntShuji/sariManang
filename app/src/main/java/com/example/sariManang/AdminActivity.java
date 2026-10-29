@@ -13,49 +13,53 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
 public class AdminActivity extends AppCompatActivity {
-    static class User {
-        int id; String name, email; long lastActive;
-        User(int i, String n, String e, long l) { id = i; name = n; email = e; lastActive = l; }
+  static class User {
+    String id, name, email;
+    long lastActive;
+
+    User(String id, String name, String email, long l) {
+      id = this.id;
+      name = this.name;
+      email = this.email;
+      lastActive = l;
     }
-
-
+  }
     private final ArrayList<User> all = new ArrayList<>(), shown = new ArrayList<>();
     private final SimpleDateFormat fmt = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
     private BaseAdapter adapter;
     private EditText search;
+    private dbManager db = new dbManager();
+    private userIDManager user;
+    private String id;
 
 
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+
+        user = new userIDManager(AdminActivity.this);
+        id = user.getUserID();
+
+
+
         setContentView(R.layout.adminpage);
         ((TextView) findViewById(R.id.tbTitle)).setText("Admin");
         findViewById(R.id.tbBack).setOnClickListener(v -> finish());
         search = findViewById(R.id.etSearch);
 
-        //placeholder names for testing
-        String[] names = {"Zoe Angela Praise", "Natsu Dragneel", "Naruto Uzumaki", "Jose Rizal", "Andres Bonifacio",
-                "Karissa Laroza", "Apolinario Mabini", "Toph Beifong", "Emilio Aguinaldo", "Irys Landicho",
-                "Light Yagami", "Corazon Ramos", "Ramon Magsaysay", "Astro Boy", "Remy Ratatoui", "Awesome friend",
-                "Gangnam Style", "Sailor Moon", "Mang Tomas", "Monkey Luffy", "Eren Yeager",
-                "Lelouch Lamperouge", "Satoru Gojo", "Itadori Yuji", "Kakashi Hatake", "Harry Potter", "Hermione Granger",
-                "Ron Weasley", "Sirius Black", "Hazel Levesque", "Nico Di ANgelo", "Percy Jackson", "Regulus Black",
-                "Remus Lupin", "Avatar Aang", "James Potter", "Neville Longbottom", "Jason Grace", "Addie La Rue", "Dean Thomas"};
 
-        Random rnd = new Random(7);
-        for (int i = 0; i < names.length; i++) {
-          //random email generator based sa names
-            String email = names[i].toLowerCase().replaceAll("[^a-z ]", "").replace(" ", ".") + "@gmail.com";
-            //new user object with id, name, email, and random last active date
-            all.add(new User(i + 1, names[i], email, System.currentTimeMillis() - rnd.nextInt(90) * 86400000L));
-        }
 
 
         ListView lv = findViewById(R.id.lvUsers);
@@ -132,5 +136,49 @@ public class AdminActivity extends AppCompatActivity {
                     Toast.makeText(this, "User deleted", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null).show();
+    }
+
+
+    private List<User> loadUsers(dbManager db){
+      db.getAllUsers()
+          .addOnSuccessListener(querySnapshot -> {
+
+            all.clear();
+
+            for (QueryDocumentSnapshot doc : querySnapshot) {
+
+              // Get fields from the document
+              String userId = doc.getId();
+              String name = doc.getString("username");
+              String email = doc.getString("email");
+
+              // Get last active timestamp, if available
+              Timestamp timestamp = doc.getTimestamp("lastActive");
+
+              long lastActive = timestamp != null
+                  ? timestamp.toDate().getTime()
+                  : 0L;
+
+              // Add user to ArrayList
+              all.add(new User(
+                  userId,
+                  name != null ? name : "Unknown",
+                  email != null ? email : "No email",
+                  lastActive
+              ));
+            }
+
+            // Refresh the ListView after loading users
+            refresh();
+
+          })
+          .addOnFailureListener(e -> {
+            Toast.makeText(
+                AdminActivity.this,
+                "Failed to load users: " + e.getMessage(),
+                Toast.LENGTH_LONG
+            ).show();
+          });
+      return all;
     }
 }
