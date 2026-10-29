@@ -71,33 +71,32 @@ public class InventoryActivity extends AppCompatActivity {
         return names;
     }
 
-    private void loadItems(){
-      db.getInv(userid, null)
-          .addOnSuccessListener(snapshot -> {
-            items.clear();
+  public static void refreshItems(dbManager db, String userid, Runnable done) {
+    db.getInv(userid, null).addOnSuccessListener(snapshot -> {
+      items.clear();
+      for (DocumentSnapshot doc : snapshot.getDocuments()) {
+        Long q = doc.getLong("quantity");
+        Double p = doc.getDouble("price");
+        Long a = doc.getLong("alertAt");
+        String expiry = doc.getString("expiry");
+        String batch = doc.getString("batch");
+        String name = doc.getString("item");
+        if (name == null) continue;
+        items.add(new Item(
+            name,
+            q != null ? q.intValue() : 0,
+            p != null ? p : 0.0,
+            expiry != null ? expiry : "",
+            batch != null ? batch : "",
+            a != null ? a.intValue() : 0));
+      }
+      if (done != null) done.run();
+    }).addOnFailureListener(e -> Log.e("INV", "Failed to load inventory", e));
+  }
 
-            for(int i = 0; i < snapshot.getDocuments().size(); i++){
-              DocumentSnapshot doc = snapshot.getDocuments().get(i);
-
-                String name = doc.getString("item");
-                Long quantity =doc.getLong("quantity");
-                int qty = quantity != null ? quantity.intValue() : 0;
-                Double price = doc.getDouble("price");
-                double price1 = price != null ? price : 0.0;
-                String expiry = doc.getString("expiry");
-                String batch = doc.getString("batch");
-                Long alertAt = doc.getLong("alertAt");
-                int alert = alertAt != null ? alertAt.intValue() : 0;
-
-
-              items.add(new Item(name, qty, price, expiry, batch, alert));
-
-            }
-
-            render();
-
-          });
-    }
+  private void loadItems() {
+    refreshItems(db, userid, this::render);
+  }
     /** Sorts the inventory items list in alphabetical order by item name. */
     private static void sortItemsAlphabetically() {
         Collections.sort(items, (a, b) -> a.name.compareToIgnoreCase(b.name));
@@ -174,8 +173,8 @@ public class InventoryActivity extends AppCompatActivity {
       stock.put("batch", batch);
       stock.put("alertAt", alertAt);
 
-        db.addTofield("stock", stock, userid);
-        sortItemsAlphabetically();
+      db.addOrUpdateStock(userid, stock)
+          .addOnFailureListener(e -> Log.e("STOCK", "add failed", e));        sortItemsAlphabetically();
 
         db.updateLastActive(userid);
     }

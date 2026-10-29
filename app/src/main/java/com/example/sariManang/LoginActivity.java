@@ -82,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
           Map<String, Object> credens = new HashMap<>();
           credens.put("username", u);
           credens.put("password", p);
-          db.addTofield("user",credens,id);
+          FirebaseFirestore.getInstance().collection("user").add(credens);
         } else {
 
           db.LoginChecker(u, p)

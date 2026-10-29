@@ -12,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class dbManager {
@@ -91,7 +92,7 @@ public class dbManager {
   }
 
   public Task<String> getSupplierID(String userid, String name, String contact){
-    return db.collection("user").document(userid).collection("suppliers").whereEqualTo("customer", name).whereEqualTo("contact", contact)
+    return db.collection("user").document(userid).collection("suppliers").whereEqualTo("supplier", name).whereEqualTo("contact", contact)
         .get()
         .continueWith(task -> {
           if (!task.isSuccessful()) {
@@ -137,7 +138,7 @@ public class dbManager {
   public void updateLastActive(String userID) {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    db.collection("users")
+    db.collection("user")
         .document(userID)
         .update("lastActive", FieldValue.serverTimestamp())
         .addOnFailureListener(e ->
@@ -166,36 +167,56 @@ public class dbManager {
   }
 
 
+  // Finds an existing stock doc by item name (case-insensitive)
+  public Task<DocumentSnapshot> getStockDoc(String userid, String itemName) {
+    return db.collection("user").document(userid).collection("stock").get()
+        .continueWith(task -> {
+          if (!task.isSuccessful()) throw task.getException();
+          for (DocumentSnapshot doc : task.getResult().getDocuments()) {
+            String n = doc.getString("item");
+            if (n != null && n.equalsIgnoreCase(itemName.trim())) return doc;
+          }
+          return null;
+        });
+  }
+
+  // Adds to the existing doc, or creates one if the item is new
+  public Task<Void> addOrUpdateStock(String userid, Map<String, Object> stock) {
+    String name = (String) stock.get("item");
+    int qty = (Integer) stock.get("quantity");
+
+    return getStockDoc(userid, name).continueWithTask(task -> {
+      if (!task.isSuccessful()) throw task.getException();
+      DocumentSnapshot existing = task.getResult();
+
+      if (existing == null) {
+        return db.collection("user").document(userid).collection("stock")
+            .add(stock).continueWith(t -> (Void) null);
+      }
+
+      Map<String, Object> updates = new HashMap<>();
+      updates.put("quantity", FieldValue.increment(qty));
+      if ((double) stock.get("price") > 0) updates.put("price", stock.get("price"));
+      if (!((String) stock.get("expiry")).isEmpty()) updates.put("expiry", stock.get("expiry"));
+      if (!((String) stock.get("batch")).isEmpty()) updates.put("batch", stock.get("batch"));
+      if ((int) stock.get("alertAt") > 0) updates.put("alertAt", stock.get("alertAt"));
+
+      return existing.getReference().update(updates);
+    });
+  }
 
   public Task<Void> subtractStock(String userid, String itemName, int soldQty) {
-    return db.collection("user")
-        .document(userid)
-        .collection("stock")
-        .whereEqualTo("item", itemName)
-        .limit(1)
-        .get()
-        .continueWithTask(task -> {
-          if (!task.isSuccessful()) {
-            throw task.getException();
-          }
+    return getStockDoc(userid, itemName).continueWithTask(task -> {
+      if (!task.isSuccessful()) throw task.getException();
+      DocumentSnapshot doc = task.getResult();
+      if (doc == null) throw new IllegalStateException("Item not found: " + itemName);
 
-          QuerySnapshot snapshot = task.getResult();
-
-          if (snapshot == null || snapshot.isEmpty()) {
-            throw new IllegalStateException("Item not found: " + itemName);
-          }
-
-          DocumentSnapshot doc = snapshot.getDocuments().get(0);
-          Long currentQty = doc.getLong("quantity");
-
-          if (currentQty == null || soldQty <= 0 || soldQty > currentQty) {
-            throw new IllegalStateException(
-                "Invalid quantity or insufficient stock for " + itemName
-            );
-          }
-
-          return doc.getReference().update("quantity", currentQty - soldQty);
-        });
+      Long currentQty = doc.getLong("quantity");
+      if (currentQty == null || soldQty <= 0 || soldQty > currentQty) {
+        throw new IllegalStateException("Insufficient stock for " + itemName);
+      }
+      return doc.getReference().update("quantity", FieldValue.increment(-soldQty));
+    });
   }
 
 

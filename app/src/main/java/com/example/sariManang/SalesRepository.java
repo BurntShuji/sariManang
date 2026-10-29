@@ -169,7 +169,6 @@ public class SalesRepository {
 
           callback.onLoaded(new ArrayList<>(records));
 
-          callback.onLoaded(new ArrayList<>(records));
         })
         .addOnFailureListener(e ->
             Log.e("SALES", "Failed to load sales", e)

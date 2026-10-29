@@ -6,6 +6,7 @@ import static com.example.sariManang.SalesRepository.getTodayFormatted;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -76,28 +77,28 @@ public class UtangRepository {
     }
 
     /** Adds a new utang entry. */
-    public static void addUtang(Context context, String customer, double amount, String dueDate) {
-        utangList.add(0, new Utang(customer, amount, dueDate));
-      String currentUserID = context.getSharedPreferences("MyUserPrefs", Context.MODE_PRIVATE)
-          .getString("userid", null);
+    public static void addUtang(Context context, String customer, double amount,
+                                String dueDate, Runnable onDone) {
+      String currentUserID = new userIDManager(context).getUserID();
+      if (currentUserID == null || currentUserID.trim().isEmpty()) {
+        Toast.makeText(context, "User ID is missing", Toast.LENGTH_SHORT).show();
+        return;
+      }
+
       Map<String, Object> utang = new HashMap<>();
       utang.put("customer", customer);
       utang.put("amount", amount);
       utang.put("dueDate", dueDate);
       utang.put("paid", false);
 
-      FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-      db.collection("user").document(currentUserID).collection("debt")
+      FirebaseFirestore.getInstance()
+          .collection("user").document(currentUserID).collection("debt")
           .add(utang)
-          .addOnSuccessListener(documentReference -> {
-            Log.d(TAG, "utang added with ID: " + documentReference.getId());
-          })
+          .addOnSuccessListener(ref -> { if (onDone != null) onDone.run(); })
           .addOnFailureListener(e -> {
-            Log.w(TAG, "Error adding sale", e);
+            Log.w(TAG, "Error adding utang", e);
+            Toast.makeText(context, "Failed to save utang", Toast.LENGTH_SHORT).show();
           });
-
-
     }
 
     /** Marks a customer utang record as paid/settled. */

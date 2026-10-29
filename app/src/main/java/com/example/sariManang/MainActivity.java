@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -56,67 +57,57 @@ public class MainActivity extends AppCompatActivity {
 
     //dummy stocks lang 'to ha
     List<InventoryActivity.Item> testInventory = new ArrayList<>();
-    testInventory.add(new InventoryActivity.Item("Lucky Me Instant Noodle", 100, 15.00, "", "", 10));
-    testInventory.add(new InventoryActivity.Item("Coca-Cola 1.5L", 50, 65.00, "", "", 5));
-    testInventory.add(new InventoryActivity.Item("Bear Brand Powdered Milk 33g", 80, 18.50, "", "", 10));
-
-    // Section 2: Set up quick action listeners
+// Section 2: Set up quick action listeners
     View btnNewSale = findViewById(R.id.btnNewSale);
-
     if (btnNewSale != null) {
       btnNewSale.setOnClickListener(v ->
-          DialogHelper.showNewSale(this, testInventory, (cartItems, grandTotal) -> {
+          InventoryActivity.refreshItems(DBHelper, id, () ->
+              DialogHelper.showNewSale(this, InventoryActivity.items, (cartItems, grandTotal) -> {
+                if (cartItems.isEmpty()) return;
 
-            if (cartItems.isEmpty()) {
-              return;
-            }
+                final int[] remaining = {cartItems.size()};
+                final boolean[] failed = {false};
 
-            final int[] remaining = {cartItems.size()};
-            final boolean[] failed = {false};
-
-            for (DialogHelper.CartItem ci : cartItems) {
-              SalesRepository.addSale(
-                  this,
-                  ci.item,
-                  ci.qty,
-                  ci.price,
-                  () -> {
-                    remaining[0]--;
-
-                    if (remaining[0] == 0 && !failed[0]) {
-                      runOnUiThread(() -> {
-                        renderTodaySales();
-
-                        Toast.makeText(
-                            this,
-                            "Sale saved successfully",
-                            Toast.LENGTH_SHORT
-                        ).show();
-                      });
-                    }
-                  },
-                  error -> runOnUiThread(() -> {
-                    failed[0] = true;
-
-                    Toast.makeText(
-                        this,
-                        "Failed to save sale: " + error.getMessage(),
-                        Toast.LENGTH_LONG
-                    ).show();
-                  })
-              );
-            }
-          })
-      );
+                for (DialogHelper.CartItem ci : cartItems) {
+                  SalesRepository.addSale(this, ci.item, ci.qty, ci.price,
+                      () -> {
+                        // stock was already deducted by the dialog
+                        remaining[0]--;
+                        if (remaining[0] == 0 && !failed[0]) {
+                          runOnUiThread(() -> {
+                            renderTodaySales();
+                            renderBestLeast();
+                            Toast.makeText(this, "Sale saved successfully", Toast.LENGTH_SHORT).show();
+                          });
+                        }
+                      },
+                      error -> runOnUiThread(() -> {
+                        failed[0] = true;
+                        Toast.makeText(this, "Failed to save sale: " + error.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                      }));
+                }
+              })));
     }
 
-    findViewById(R.id.btnRecordUtang).setOnClickListener(v -> DialogHelper.showRecordUtang(this, (customer, amount, date) -> {
-      UtangRepository.addUtang(this, customer, amount, date);
-      renderUtang();
-    }));
+    findViewById(R.id.btnRecordUtang).setOnClickListener(v ->
+        DialogHelper.showRecordUtang(this, (customer, amount, date) ->
+            UtangRepository.addUtang(this, customer, amount, date, this::renderUtang)));
 
-    findViewById(R.id.btnAddStock).setOnClickListener(v -> DialogHelper.showAddStock(this, InventoryActivity.getExistingItemNames(), null));
-
+    findViewById(R.id.btnAddStock).setOnClickListener(v ->
+        InventoryActivity.refreshItems(DBHelper, id, () ->
+            DialogHelper.showAddStock(this, InventoryActivity.getExistingItemNames(),
+                (n, q, p, e, bt, a) -> {
+                  Map<String, Object> stock = new HashMap<>();
+                  stock.put("item", n.trim());
+                  stock.put("quantity", q);
+                  stock.put("price", p);
+                  stock.put("expiry", e);
+                  stock.put("batch", bt);
+                  stock.put("alertAt", a);
+                  DBHelper.addOrUpdateStock(id, stock)
+                      .addOnFailureListener(err -> Log.e("STOCK", "add failed", err));
+                })));
     // Section 3: Configure bottom navigation bar
     NavigationHelper.setup(this, R.id.navHome);
 

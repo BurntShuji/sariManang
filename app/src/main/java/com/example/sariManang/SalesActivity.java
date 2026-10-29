@@ -108,8 +108,7 @@ public class SalesActivity extends AppCompatActivity {
     }
 
     findViewById(R.id.btnRecordUtang).setOnClickListener(v -> DialogHelper.showRecordUtang(this, (cust, amt, date) -> {
-      UtangRepository.addUtang(this, cust, amt, date);
-      renderUtang();
+      UtangRepository.addUtang(this, cust, amt, date, this::renderUtang);
     }));
 
     findViewById(R.id.tvViewFull).setOnClickListener(v -> {
