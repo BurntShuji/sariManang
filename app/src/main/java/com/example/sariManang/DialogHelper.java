@@ -7,6 +7,7 @@ import android.text.TextWatcher;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.Filter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -111,7 +112,7 @@ public class DialogHelper {
     public static void showNewSale(Context c, List<InventoryActivity.Item> inventoryItems, SaleListener l) {
       AlertDialog d = open(c, R.layout.dialognewsale);
 
-      AutoCompleteTextView item = d.findViewById(R.id.etItem);
+      EditText item = d.findViewById(R.id.etItem);
       EditText qty = d.findViewById(R.id.etQty), price = d.findViewById(R.id.etPrice);
       TextView total = d.findViewById(R.id.tvTotal);
       TextView btnAddItem = d.findViewById(R.id.btnAddItem);
@@ -119,28 +120,42 @@ public class DialogHelper {
 
       List<CartItem> cartList = new ArrayList<>();
 
-      // Populate dropdown with inventory item names
+      // D2 naeextract inventory item names pra sa selector popup
       List<String> names = new ArrayList<>();
       if (inventoryItems != null) {
         for (InventoryActivity.Item i : inventoryItems) {
-          names.add(i.name);
+          if (i != null && i.name != null) {
+            names.add(i.name);
+          }
         }
       }
-      ArrayAdapter<String> adapter = new ArrayAdapter<>(c, android.R.layout.simple_dropdown_item_1line, names);
-      if (item != null) item.setAdapter(adapter);
 
-      // AUTO-FILL PRICE WHEN AN ITEM IS SELECTED FROM DROPDOWN
+      // d2 tap choose from the dialoge popup
       if (item != null) {
-        item.setOnItemClickListener((parent, view, position, id) -> {
-          String selectedName = (String) parent.getItemAtPosition(position);
-          if (inventoryItems != null) {
-            for (InventoryActivity.Item i : inventoryItems) {
-              if (i.name.equalsIgnoreCase(selectedName)) {
-                if (price != null) price.setText(String.valueOf(i.price));
-                break;
-              }
-            }
+        item.setOnClickListener(v -> {
+          if (names.isEmpty()) {
+            Toast.makeText(c, "No inventory items available", Toast.LENGTH_SHORT).show();
+            return;
           }
+
+          String[] itemArray = names.toArray(new String[0]);
+          new AlertDialog.Builder(c)
+              .setTitle("Select Inventory Item")
+              .setItems(itemArray, (dialog, which) -> {
+                String selectedName = itemArray[which];
+                item.setText(selectedName);
+
+                // Auto-fill price
+                if (inventoryItems != null) {
+                  for (InventoryActivity.Item i : inventoryItems) {
+                    if (i != null && i.name != null && i.name.equalsIgnoreCase(selectedName)) {
+                      if (price != null) price.setText(String.valueOf(i.price));
+                      break;
+                    }
+                  }
+                }
+              })
+              .show();
         });
       }
 

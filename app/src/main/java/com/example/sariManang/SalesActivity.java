@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -20,7 +21,7 @@ import java.util.Map;
  */
 public class SalesActivity extends AppCompatActivity {
 
-    private boolean expanded = false;
+  private boolean expanded = false;
   private userIDManager user;
   private String id;
   private dbManager db = new dbManager();
@@ -39,15 +40,23 @@ public class SalesActivity extends AppCompatActivity {
         NavigationHelper.setupToolbar(this, "Sales");
         NavigationHelper.setup(this, R.id.navSales);
 
+      //dummy stocks lang 'to ha
+      List<InventoryActivity.Item> testInventory = new ArrayList<>();
+      testInventory.add(new InventoryActivity.Item("Lucky Me Instant Noodle", 100, 15.00, "", "", 10));
+      testInventory.add(new InventoryActivity.Item("Coca-Cola 1.5L", 50, 65.00, "", "", 5));
+      testInventory.add(new InventoryActivity.Item("Bear Brand Powdered Milk 33g", 80, 18.50, "", "", 10));
       // Section 2: Quick action button listeners
-      findViewById(R.id.btnLogSale).setOnClickListener(v ->
-          DialogHelper.showNewSale(this, InventoryActivity.items, (cartItems, grandTotal) -> {
-            for (DialogHelper.CartItem ci : cartItems) {
-              SalesRepository.addSale(this, ci.item, ci.qty, ci.price);
-            }
-            renderSales();
-          })
-      );
+      View btnLogSale = findViewById(R.id.btnLogSale);
+      if (btnLogSale != null) {
+        btnLogSale.setOnClickListener(v ->
+            DialogHelper.showNewSale(this, testInventory, (cartItems, grandTotal) -> {
+              for (DialogHelper.CartItem ci : cartItems) {
+                SalesRepository.addSale(this, ci.item, ci.qty, ci.price);
+              }
+              renderSales();
+            })
+        );
+      }
 
         findViewById(R.id.btnRecordUtang).setOnClickListener(v -> DialogHelper.showRecordUtang(this, (cust, amt, date) -> {
             UtangRepository.addUtang(this, cust, amt, date);
