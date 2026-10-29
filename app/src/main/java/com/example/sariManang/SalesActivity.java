@@ -137,21 +137,25 @@ public class SalesActivity extends AppCompatActivity {
 
     /** Renders the list of customer utang records with a "Mark Paid" button for credit settlement. */
     private void renderUtang() {
-        LinearLayout list = findViewById(R.id.listUtangSales);
-        if (list == null) return;
-        list.removeAllViews();
+      LinearLayout list = findViewById(R.id.listUtangSales);
+      if (list == null) return;
 
-        List<Utang> utangList = UtangRepository.getUnpaidUtangList();
-        double totalUtang = 0;
+      list.removeAllViews();
 
-        if (utangList.isEmpty()) {
-            TextView e = new TextView(this);
-            e.setText("No unpaid utang recorded.");
-            e.setPadding(0, 18, 0, 18);
-            e.setTextColor(0xFF777777);
-            list.addView(e);
-        } else {
-            for (Utang u : utangList) {
+      UtangRepository.getUnpaidUtangList(id, db)
+          .addOnSuccessListener(utangList -> {
+            list.removeAllViews();
+
+            double totalUtang = 0;
+
+            if (utangList.isEmpty()) {
+              TextView e = new TextView(this);
+              e.setText("No unpaid utang recorded.");
+              e.setPadding(0, 18, 0, 18);
+              e.setTextColor(0xFF777777);
+              list.addView(e);
+            } else {
+              for (Utang u : utangList) {
                 totalUtang += u.amount;
 
                 LinearLayout row = new LinearLayout(this);
@@ -159,10 +163,12 @@ public class SalesActivity extends AppCompatActivity {
                 row.setPadding(0, 14, 0, 14);
                 row.setGravity(Gravity.CENTER_VERTICAL);
 
-                // Customer Name & Due Date
+                // Customer name and due date
                 LinearLayout colInfo = new LinearLayout(this);
                 colInfo.setOrientation(LinearLayout.VERTICAL);
-                colInfo.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 2f));
+                colInfo.setLayoutParams(new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 2f
+                ));
 
                 TextView tvName = new TextView(this);
                 tvName.setText(u.customer);
@@ -178,33 +184,37 @@ public class SalesActivity extends AppCompatActivity {
                 colInfo.addView(tvName);
                 colInfo.addView(tvDue);
 
-                // Status (Overdue / Due Today / Due in X Days)
+                // Status
                 TextView tvStatus = new TextView(this);
-                tvStatus.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.2f));
+                tvStatus.setLayoutParams(new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.2f
+                ));
                 tvStatus.setText(u.getStatusText());
                 tvStatus.setTextSize(12);
                 tvStatus.setGravity(Gravity.CENTER);
                 tvStatus.setTypeface(null, android.graphics.Typeface.BOLD);
-
-                if (u.isOverdue()) {
-                    tvStatus.setTextColor(0xFFD32F2F);
-                } else {
-                    tvStatus.setTextColor(0xFF111111);
-                }
+                tvStatus.setTextColor(
+                    u.isOverdue() ? 0xFFD32F2F : 0xFF111111
+                );
 
                 // Amount
                 TextView tvAmt = new TextView(this);
-                tvAmt.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.2f));
+                tvAmt.setLayoutParams(new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.2f
+                ));
                 tvAmt.setText(String.format(Locale.US, "₱%,.2f", u.amount));
                 tvAmt.setTextSize(13);
                 tvAmt.setTextColor(0xFF111111);
                 tvAmt.setGravity(Gravity.END);
                 tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
 
-                // Mark Paid Button
+                // Mark Paid button
                 TextView btnPay = new TextView(this);
-                LinearLayout.LayoutParams lpBtn = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                LinearLayout.LayoutParams lpBtn =
+                    new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    );
                 lpBtn.setMargins(16, 0, 0, 0);
                 btnPay.setLayoutParams(lpBtn);
                 btnPay.setText("Mark Paid");
@@ -212,34 +222,70 @@ public class SalesActivity extends AppCompatActivity {
                 btnPay.setTextColor(0xFFFFFFFF);
                 btnPay.setBackgroundResource(R.drawable.bg_btn_red);
                 btnPay.setPadding(16, 8, 16, 8);
-                btnPay.setOnClickListener(v -> new AlertDialog.Builder(this)
+
+                btnPay.setOnClickListener(v ->
+                    new AlertDialog.Builder(this)
                         .setTitle("Settle Utang")
-                        .setMessage("Mark " + u.customer + "'s utang of ₱" + String.format(Locale.US, "%.2f", u.amount) + " as paid?")
+                        .setMessage(
+                            "Mark " + u.customer +
+                                "'s utang of ₱" +
+                                String.format(Locale.US, "%.2f", u.amount) +
+                                " as paid?"
+                        )
                         .setPositiveButton("Yes, Paid", (dialog, which) -> {
-                            UtangRepository.markPaid(u);
-                            Toast.makeText(this, "Utang marked as paid", Toast.LENGTH_SHORT).show();
-                            renderUtang();
+                          btnPay.setEnabled(false);
+
+                          UtangRepository.markPaid(
+                              u,
+                              id,
+                              db,
+                              () -> {
+                                Toast.makeText(
+                                    SalesActivity.this,
+                                    "Utang marked as paid",
+                                    Toast.LENGTH_SHORT
+                                ).show();
+
+                                renderUtang();
+                              },
+                              error -> {
+                                btnPay.setEnabled(true);
+
+                                Toast.makeText(
+                                    SalesActivity.this,
+                                    "Failed to update utang",
+                                    Toast.LENGTH_SHORT
+                                ).show();
+                              }
+                          );
                         })
-                        .setNegativeButton("Cancel", null)
-                        .show());
+                );
 
                 row.addView(colInfo);
                 row.addView(tvStatus);
                 row.addView(tvAmt);
                 row.addView(btnPay);
-
                 list.addView(row);
 
                 View div = new View(this);
-                div.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
+                div.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 1
+                ));
                 div.setBackgroundColor(0xFFE5E5E5);
                 list.addView(div);
+              }
             }
-        }
 
-        TextView tvSummary = findViewById(R.id.tvUtangSummary);
-        if (tvSummary != null) {
-            tvSummary.setText(String.format(Locale.US, "Total: ₱%,.2f", totalUtang));
-        }
+            // Update total
+            TextView tvSummary = findViewById(R.id.tvUtangSummary);
+            if (tvSummary != null) {
+              tvSummary.setText(
+                  String.format(Locale.US, "Total: ₱%,.2f", totalUtang)
+              );
+            }
+          })
+          .addOnFailureListener(e ->
+              android.util.Log.e("UTANG", "Failed to load unpaid debts", e)
+          );
     }
 }
