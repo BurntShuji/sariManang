@@ -259,6 +259,8 @@ public class SalesActivity extends AppCompatActivity {
                               }
                           );
                         })
+
+                        .show()
                 );
 
                 row.addView(colInfo);
