@@ -1,7 +1,9 @@
 package com.example.sariManang;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -14,6 +16,15 @@ import androidx.appcompat.app.AppCompatActivity;
  * notification reminder toggles, data archiving, and logout actions.
  */
 public class SettingsActivity extends AppCompatActivity {
+
+  public static final String PREFS = "sari_settings";
+  public static final String KEY_LOW_STOCK = "low_stock_default";
+  public static final int DEFAULT_LOW_STOCK = 5;
+
+  public static int getLowStockDefault(Context c) {
+    return c.getSharedPreferences(PREFS, MODE_PRIVATE)
+        .getInt(KEY_LOW_STOCK, DEFAULT_LOW_STOCK);
+  }
 
     private String accountName = "Manang Owner";
     private String accountEmail = "owner@sarimanang.ph";
@@ -57,10 +68,40 @@ public class SettingsActivity extends AppCompatActivity {
             startActivity(in);
         });
 
+
+      TextView btnLowStock = findViewById(R.id.etLowStock);
+      if (btnLowStock != null) {
+        btnLowStock.setText("Default low-stock alert: " + getLowStockDefault(this) + " units");
+        btnLowStock.setOnClickListener(v -> showLowStockDialog(btnLowStock));
+      }
+
       // Section 5: Admin button
       findViewById(R.id.btnAdmin).setOnClickListener(v ->
           startActivity(new Intent(this, AdminActivity.class)));
     }
+
+  private void showLowStockDialog(TextView label) {
+    EditText et = new EditText(this);
+    et.setInputType(InputType.TYPE_CLASS_NUMBER);
+    et.setText(String.valueOf(getLowStockDefault(this)));
+
+    new AlertDialog.Builder(this)
+        .setTitle("Default low-stock alert")
+        .setMessage("Items turn red when their quantity is at or below this number.")
+        .setView(et)
+        .setPositiveButton("Save", (d, w) -> {
+          try {
+            int v = Integer.parseInt(et.getText().toString().trim());
+            getSharedPreferences(PREFS, MODE_PRIVATE)
+                .edit().putInt(KEY_LOW_STOCK, v).apply();
+            label.setText("Default low-stock alert: " + v + " units");
+          } catch (NumberFormatException ex) {
+            Toast.makeText(this, "Enter a valid number", Toast.LENGTH_SHORT).show();
+          }
+        })
+        .setNegativeButton("Cancel", null)
+        .show();
+  }
 
     /** Displays a dialog popup to edit account user name and email. */
     private void showEditAccountDialog() {

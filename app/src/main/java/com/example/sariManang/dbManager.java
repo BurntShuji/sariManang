@@ -5,10 +5,12 @@ import static android.content.ContentValues.TAG;
 import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Transaction;
 
 import java.util.Map;
 
@@ -162,6 +164,41 @@ public class dbManager {
           .whereEqualTo("password", p)
           .get();
   }
+
+
+
+  public Task<Void> subtractStock(String userid, String itemName, int soldQty) {
+    return db.collection("user")
+        .document(userid)
+        .collection("stock")
+        .whereEqualTo("item", itemName)
+        .limit(1)
+        .get()
+        .continueWithTask(task -> {
+          if (!task.isSuccessful()) {
+            throw task.getException();
+          }
+
+          QuerySnapshot snapshot = task.getResult();
+
+          if (snapshot == null || snapshot.isEmpty()) {
+            throw new IllegalStateException("Item not found: " + itemName);
+          }
+
+          DocumentSnapshot doc = snapshot.getDocuments().get(0);
+          Long currentQty = doc.getLong("quantity");
+
+          if (currentQty == null || soldQty <= 0 || soldQty > currentQty) {
+            throw new IllegalStateException(
+                "Invalid quantity or insufficient stock for " + itemName
+            );
+          }
+
+          return doc.getReference().update("quantity", currentQty - soldQty);
+        });
+  }
+
+
 
 
 

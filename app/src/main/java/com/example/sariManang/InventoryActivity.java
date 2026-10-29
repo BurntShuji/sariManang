@@ -138,6 +138,12 @@ public class InventoryActivity extends AppCompatActivity {
         loadItems();
     }
 
+  @Override
+  protected void onResume() {
+    super.onResume();
+    if (list != null) render();
+  }
+
     /**
      * Adds a new stock item or updates quantity/details if the item already exists in inventory.
      * Maintains alphabetical order.
@@ -193,11 +199,13 @@ public class InventoryActivity extends AppCompatActivity {
         String q = search.getText().toString().toLowerCase().trim();
         int shown = 0;
 
-        for (Item it : items) {
+      int threshold = SettingsActivity.getLowStockDefault(this);
+
+      for (Item it : items) {
             if (!it.name.toLowerCase().contains(q)) continue;
             shown++;
 
-            boolean low = it.qty <= it.alertAt;
+            boolean low = it.qty <= threshold;
             long days = Long.MAX_VALUE;
             try {
                 days = TimeUnit.MILLISECONDS.toDays(
