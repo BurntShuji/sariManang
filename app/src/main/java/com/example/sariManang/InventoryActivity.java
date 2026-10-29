@@ -36,10 +36,10 @@ import java.util.concurrent.TimeUnit;
 public class InventoryActivity extends AppCompatActivity {
 
     /** Model class representing an inventory item. */
-    static class Item {
-        String name, expiry, batch;
+    public static class Item {
+        public String name, expiry, batch;
         int qty, alertAt;
-        double price;
+        public double price;
 
         Item(String n, int q, double p, String e, String b, int a) {
             name = n;
@@ -57,7 +57,7 @@ public class InventoryActivity extends AppCompatActivity {
     private dbManager db = new dbManager();
 
 
-    private static final List<Item> items = new ArrayList<>();
+    public static final List<Item> items = new ArrayList<>();
 
     private LinearLayout list;
     private EditText search;

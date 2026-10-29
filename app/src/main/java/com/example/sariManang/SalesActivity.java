@@ -39,11 +39,15 @@ public class SalesActivity extends AppCompatActivity {
         NavigationHelper.setupToolbar(this, "Sales");
         NavigationHelper.setup(this, R.id.navSales);
 
-        // Section 2: Quick action button listeners
-        findViewById(R.id.btnLogSale).setOnClickListener(v -> DialogHelper.showNewSale(this, (item, qty, price) -> {
-            SalesRepository.addSale(this, item, qty, price);
+      // Section 2: Quick action button listeners
+      findViewById(R.id.btnLogSale).setOnClickListener(v ->
+          DialogHelper.showNewSale(this, InventoryActivity.items, (cartItems, grandTotal) -> {
+            for (DialogHelper.CartItem ci : cartItems) {
+              SalesRepository.addSale(this, ci.item, ci.qty, ci.price);
+            }
             renderSales();
-        }));
+          })
+      );
 
         findViewById(R.id.btnRecordUtang).setOnClickListener(v -> DialogHelper.showRecordUtang(this, (cust, amt, date) -> {
             UtangRepository.addUtang(this, cust, amt, date);

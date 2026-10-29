@@ -7,10 +7,12 @@ import android.text.TextWatcher;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -23,7 +25,7 @@ public class DialogHelper {
 
     /** Callback interface for logging a new sale. */
     public interface SaleListener {
-        void onSale(String item, int qty, double price);
+        void onSale(List<CartItem> cartItems, double grandTotal);
     }
 
     /** Callback interface for adding or updating inventory stock. */
@@ -92,38 +94,127 @@ public class DialogHelper {
         });
     }
 
+    //Para magrepresent as a cart
+    public static class CartItem {
+      public String item;
+      public int qty;
+      public double price;
+
+    public CartItem(String item, int qty, double price) {
+      this.item = item;
+      this.qty = qty;
+      this.price = price;
+    }
+    }
+
     /** Displays "Log Sale" dialog popup. */
-    public static void showNewSale(Context c, SaleListener l) {
-        AlertDialog d = open(c, R.layout.dialognewsale);
-        EditText item = d.findViewById(R.id.etItem), qty = d.findViewById(R.id.etQty), price = d.findViewById(R.id.etPrice);
-        TextView total = d.findViewById(R.id.tvTotal);
+    public static void showNewSale(Context c, List<InventoryActivity.Item> inventoryItems, SaleListener l) {
+      AlertDialog d = open(c, R.layout.dialognewsale);
 
-        TextWatcher w = new TextWatcher() {
-            public void beforeTextChanged(CharSequence a, int b, int c2, int d2) {}
-            public void onTextChanged(CharSequence a, int b, int c2, int d2) {}
-            public void afterTextChanged(Editable e) {
-                if (total != null) {
-                    total.setText(String.format(Locale.US, "Total: ₱%,.2f", num(qty) * num(price)));
-                }
-            }
-        };
+      AutoCompleteTextView item = d.findViewById(R.id.etItem);
+      EditText qty = d.findViewById(R.id.etQty), price = d.findViewById(R.id.etPrice);
+      TextView total = d.findViewById(R.id.tvTotal);
+      TextView btnAddItem = d.findViewById(R.id.btnAddItem);
+      LinearLayout cartContainer = d.findViewById(R.id.cartContainer);
 
-        if (qty != null) qty.addTextChangedListener(w);
-        if (price != null) price.addTextChangedListener(w);
+      List<CartItem> cartList = new ArrayList<>();
 
-        TextView btnSave = d.findViewById(R.id.btnSave);
-        if (btnSave != null) {
-            btnSave.setOnClickListener(v -> {
-                if (!req(item, qty, price)) return;
-                if (num(qty) <= 0) {
-                    if (qty != null) qty.setError("Must be at least 1");
-                    return;
-                }
-                if (l != null) l.onSale(s(item), (int) num(qty), num(price));
-                Toast.makeText(c, "Sale logged", Toast.LENGTH_SHORT).show();
-                d.dismiss();
-            });
+      // Populate dropdown with inventory item names
+      List<String> names = new ArrayList<>();
+      if (inventoryItems != null) {
+        for (InventoryActivity.Item i : inventoryItems) {
+          names.add(i.name);
         }
+      }
+      ArrayAdapter<String> adapter = new ArrayAdapter<>(c, android.R.layout.simple_dropdown_item_1line, names);
+      if (item != null) item.setAdapter(adapter);
+
+      // AUTO-FILL PRICE WHEN AN ITEM IS SELECTED FROM DROPDOWN
+      if (item != null) {
+        item.setOnItemClickListener((parent, view, position, id) -> {
+          String selectedName = (String) parent.getItemAtPosition(position);
+          if (inventoryItems != null) {
+            for (InventoryActivity.Item i : inventoryItems) {
+              if (i.name.equalsIgnoreCase(selectedName)) {
+                if (price != null) price.setText(String.valueOf(i.price));
+                break;
+              }
+            }
+          }
+        });
+      }
+
+      // REAL-TIME ROW TOTAL CALCULATION
+      TextWatcher w = new TextWatcher() {
+        public void beforeTextChanged(CharSequence a, int b, int c2, int d2) {}
+        public void onTextChanged(CharSequence a, int b, int c2, int d2) {}
+        public void afterTextChanged(Editable e) {
+          // Live calculation preview for the item currently being edited
+          double currentItemTotal = num(qty) * num(price);
+        }
+      };
+
+      if (qty != null) qty.addTextChangedListener(w);
+      if (price != null) price.addTextChangedListener(w);
+
+      // ADD ITEM TO TRANSACTION CART LIST
+      if (btnAddItem != null) {
+        btnAddItem.setOnClickListener(v -> {
+          if (!req(item, qty, price)) return;
+          if (num(qty) <= 0) {
+            if (qty != null) qty.setError("Must be at least 1");
+            return;
+          }
+
+          String itemName = s(item);
+          int itemQty = (int) num(qty);
+          double itemPrice = num(price);
+
+          // Add item to temporary transaction array
+          cartList.add(new CartItem(itemName, itemQty, itemPrice));
+
+          // Display row in cart UI
+          TextView rowView = new TextView(c);
+          rowView.setText(String.format(Locale.US, "• %s x%d - ₱%,.2f", itemName, itemQty, itemQty * itemPrice));
+          rowView.setTextSize(13);
+          rowView.setPadding(0, 4, 0, 4);
+          if (cartContainer != null) cartContainer.addView(rowView);
+
+          // Calculate and display cumulative grand total
+          double grandTotal = 0;
+          for (CartItem ci : cartList) {
+            grandTotal += (ci.qty * ci.price);
+          }
+          if (total != null) {
+            total.setText(String.format(Locale.US, "Total: ₱%,.2f", grandTotal));
+          }
+
+          // Clear inputs for the next entry
+          item.setText("");
+          qty.setText("");
+          price.setText("");
+        });
+      }
+
+      // SAVE COMPLETE MULTI-ITEM TRANSACTION
+      TextView btnSave = d.findViewById(R.id.btnSave);
+      if (btnSave != null) {
+        btnSave.setOnClickListener(v -> {
+          if (cartList.isEmpty()) {
+            Toast.makeText(c, "Add at least 1 item to sale", Toast.LENGTH_SHORT).show();
+            return;
+          }
+
+          double grandTotal = 0;
+          for (CartItem ci : cartList) {
+            grandTotal += (ci.qty * ci.price);
+          }
+
+          if (l != null) l.onSale(cartList, grandTotal);
+          Toast.makeText(c, "Sale logged", Toast.LENGTH_SHORT).show();
+          d.dismiss();
+        });
+      }
     }
 
     /** Displays "Record Utang" dialog popup. */
