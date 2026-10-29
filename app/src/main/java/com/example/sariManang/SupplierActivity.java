@@ -1,7 +1,5 @@
 package com.example.sariManang;
 
-import static android.content.ContentValues.TAG;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
@@ -19,7 +17,6 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -176,30 +173,25 @@ public class SupplierActivity extends AppCompatActivity {
         c.addView(a);
         c.addView(n);
         favs.addView(c);
+      db.updateLastActive(id);
+
     }
 
 
-    public void addSupplier(Context context, String supplier, String contact){
+    public void addSupplier(Context context, String name, String contact){
       String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
           .getString("userid", null);
-      suppliers.add(0, new Supplier(supplier, contact, 0,0,false));
-      Map<String, Object> utang = new HashMap<>();
-      utang.put("supplier", supplier);
-      utang.put("contact", contact);
-      utang.put("good", 0);
-      utang.put("bad", 0);
-      utang.put("favorite", false);
+      suppliers.add(0, new Supplier(name, contact, 0,0,false));
+      Map<String, Object> supplier = new HashMap<>();
+      supplier.put("supplier", name);
+      supplier.put("contact", contact);
+      supplier.put("good", 0);
+      supplier.put("bad", 0);
+      supplier.put("favorite", false);
 
-      FirebaseFirestore db = FirebaseFirestore.getInstance();
+      db.addTofield("suppliers", supplier, id);
+      db.updateLastActive(id);
 
-      db.collection("user").document(currentUserID).collection("suppliers")
-          .add(utang)
-          .addOnSuccessListener(documentReference -> {
-            Log.d(TAG, "utang added with ID: " + documentReference.getId());
-          })
-          .addOnFailureListener(e -> {
-            Log.w(TAG, "Error adding sale", e);
-          });
     }
 
     public List<Supplier> loadSuppliers(){

@@ -143,8 +143,6 @@ public class InventoryActivity extends AppCompatActivity {
      * Maintains alphabetical order.
      */
     private void addOrUpdateStockItem(Context context, String name, int qty, double price, String expiry, String batch, int alertAt) {
-      String currentUserID = context.getSharedPreferences("MyUserPrefs", Context.MODE_PRIVATE)
-          .getString("userid", null);
 
       boolean exists = false;
         for (Item item : items) {
@@ -170,17 +168,10 @@ public class InventoryActivity extends AppCompatActivity {
       stock.put("batch", batch);
       stock.put("alertAt", alertAt);
 
-      FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-      db.collection("user").document(currentUserID).collection("stock")
-          .add(stock)
-          .addOnSuccessListener(documentReference -> {
-            Log.d(TAG, "stock added with ID: " + documentReference.getId());
-          })
-          .addOnFailureListener(e -> {
-            Log.w(TAG, "Error adding stock", e);
-          });
+        db.addTofield("stock", stock, userid);
         sortItemsAlphabetically();
+
+        db.updateLastActive(userid);
     }
 
     /** Formats and creates table view cells. */

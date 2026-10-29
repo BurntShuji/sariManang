@@ -1,12 +1,17 @@
 package com.example.sariManang;
 
+import static android.content.ContentValues.TAG;
+
 import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.Map;
 
 public class dbManager {
   FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -30,6 +35,10 @@ public class dbManager {
 
   public Task<QuerySnapshot> getAllSuppliers(String userid){
     return db.collection("user").document(userid).collection("suppliers").get();
+  }
+
+  public Task<QuerySnapshot> getAllUsers(){
+    return db.collection("user").get();
   }
 
   public Task<String> getDebtID(String userid, String name, double amount, String due){
@@ -123,5 +132,31 @@ public class dbManager {
               );
         });
   }
+
+  public void updateLastActive(String userID) {
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    db.collection("users")
+        .document(userID)
+        .update("lastActive", FieldValue.serverTimestamp())
+        .addOnFailureListener(e ->
+            Log.e("LastActive", "Failed to update", e)
+        );
+  }
+
+
+  public void addTofield(String collection, Map<String, Object> item, String userid){
+    db.collection("user").document(userid).collection(collection)
+        .add(item)
+        .addOnSuccessListener(documentReference -> {
+          Log.d(TAG, "added with ID: " + documentReference.getId());
+        })
+        .addOnFailureListener(e -> {
+          Log.w(TAG, "Error adding", e);
+        });
+  }
+
+
+
 
 }
