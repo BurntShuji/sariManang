@@ -132,6 +132,9 @@ public class DialogHelper {
 
       // d2 tap choose from the dialoge popup
       if (item != null) {
+        item.setFocusable(false);
+        item.setFocusableInTouchMode(false);
+        item.setCursorVisible(false);
         item.setOnClickListener(v -> {
           if (names.isEmpty()) {
             Toast.makeText(c, "No inventory items available", Toast.LENGTH_SHORT).show();
@@ -176,8 +179,19 @@ public class DialogHelper {
       if (btnAddItem != null) {
         btnAddItem.setOnClickListener(v -> {
           if (!req(item, qty, price)) return;
-          if (num(qty) <= 0) {
-            if (qty != null) qty.setError("Must be at least 1");
+          InventoryActivity.Item match = null;
+          for (InventoryActivity.Item i : inventoryItems) {
+            if (i != null && i.name != null && i.name.equalsIgnoreCase(s(item))) {
+              match = i;
+              break;
+            }
+          }
+          if (match == null) {
+            item.setError("Choose an item from inventory");
+            return;
+          }
+          if (num(qty) > match.qty) {   // optional: stop selling more than you have
+            qty.setError("Only " + match.qty + " in stock");
             return;
           }
 

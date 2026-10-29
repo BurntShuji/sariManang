@@ -10,6 +10,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,20 +44,33 @@ public class SalesActivity extends AppCompatActivity {
     NavigationHelper.setupToolbar(this, "Sales");
     NavigationHelper.setup(this, R.id.navSales);
 
-    //dummy stocks lang 'to ha
-    List<InventoryActivity.Item> testInventory = new ArrayList<>();
-    testInventory.add(new InventoryActivity.Item("Lucky Me Instant Noodle", 100, 15.00, "", "", 10));
-    testInventory.add(new InventoryActivity.Item("Coca-Cola 1.5L", 50, 65.00, "", "", 5));
-    testInventory.add(new InventoryActivity.Item("Bear Brand Powdered Milk 33g", 80, 18.50, "", "", 10));
-    // Section 2: Quick action button listeners
+ //Section 2: Quick action button listeners
     View btnLogSale = findViewById(R.id.btnLogSale);
     if (btnLogSale != null) {
       btnLogSale.setOnClickListener(v ->
-          DialogHelper.showNewSale(this, testInventory, (cartItems, grandTotal) -> {
-            for (DialogHelper.CartItem ci : cartItems) {
-              SalesRepository.addSale(this, ci.item, ci.qty, ci.price);
+          db.getInv(id, null).addOnSuccessListener(snapshot -> {
+            InventoryActivity.items.clear();
+            for (DocumentSnapshot doc : snapshot.getDocuments()) {
+              Long q = doc.getLong("quantity");
+              Double p = doc.getDouble("price");
+              Long a = doc.getLong("alertAt");
+              String expiry = doc.getString("expiry");
+              String batch = doc.getString("batch");
+              InventoryActivity.items.add(new InventoryActivity.Item(
+                  doc.getString("item"),
+                  q != null ? q.intValue() : 0,
+                  p != null ? p : 0.0,
+                  expiry != null ? expiry : "",
+                  batch != null ? batch : "",
+                  a != null ? a.intValue() : 0));
             }
-            renderSales();
+
+            DialogHelper.showNewSale(this, InventoryActivity.items, (cartItems, grandTotal) -> {
+              for (DialogHelper.CartItem ci : cartItems) {
+                SalesRepository.addSale(this, ci.item, ci.qty, ci.price);
+              }
+              renderSales();
+            });
           })
       );
     }
