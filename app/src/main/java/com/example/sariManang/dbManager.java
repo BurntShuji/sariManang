@@ -48,7 +48,8 @@ public class dbManager {
 
 
   public Task<String> getDebtID(String userid, String name, double amount, String due){
-    return db.collection("user").document(userid).collection("debt").whereEqualTo("customer", name).whereEqualTo("amount",amount).whereEqualTo("dueDate", due)
+    return db.collection("user").document(userid).collection("debt")
+        .whereEqualTo("customer", name).whereEqualTo("amount",amount).whereEqualTo("dueDate", due)
         .get()
         .continueWith(task -> {
           if (!task.isSuccessful()) {

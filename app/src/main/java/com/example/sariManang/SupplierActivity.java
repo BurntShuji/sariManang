@@ -179,8 +179,6 @@ public class SupplierActivity extends AppCompatActivity {
 
 
     public void addSupplier(Context context, String name, String contact){
-      String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
-          .getString("userid", null);
       suppliers.add(0, new Supplier(name, contact, 0,0,false));
       Map<String, Object> supplier = new HashMap<>();
       supplier.put("supplier", name);
