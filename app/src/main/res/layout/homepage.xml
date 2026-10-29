@@ -75,11 +75,11 @@
             <!-- Section 5: Sales Estimate and Progress Tracker -->
             <LinearLayout style="@style/SariCard">
                 <TextView style="@style/SariLabel" android:text="Sales Estimate"/>
-                <TextView style="@style/SariMuted" android:layout_marginTop="6dp"
-                    android:text="Log at least 5 sales to unlock estimates. 3 / 5 logged."/>
-                <ProgressBar style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent"
-                    android:layout_height="8dp" android:layout_marginTop="8dp" android:max="5" android:progress="3"
-                    android:progressTint="@color/red"/>
+                <TextView android:id="@+id/tvHomeEstimate" style="@style/SariMuted" android:layout_marginTop="6dp"
+                    android:text="Log at least 5 sales to unlock estimates."/>
+                <ProgressBar android:id="@+id/pbHomeEstimate" style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent" android:layout_height="8dp" android:layout_marginTop="8dp"
+                    android:max="5" android:progress="0" android:progressTint="@color/red"/>
             </LinearLayout>
 
         </LinearLayout>

@@ -53,27 +53,6 @@ public class SalesRepository {
         return new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()).format(new Date());
     }
 
-    /** Returns all sales records. */
-    public static List<SaleRecord> getRecords(String userid, dbManager db) {
-      Task<QuerySnapshot> querySnapshotTask = db.getAllSales(userid).addOnSuccessListener(querySnapshot -> {
-        records.clear();
-        for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-          SaleRecord sale = new SaleRecord(
-              doc.getString("date"),
-              doc.getString("item"),
-              Objects.requireNonNull(doc.getLong("quantity")).intValue(),
-              doc.getDouble("price").doubleValue()
-          );
-
-          records.add(sale);
-        }
-      })
-          .addOnFailureListener(e ->
-              Log.e("SALES", "Failed to load sales", e)
-          );
-      return records;
-    }
-
     /** Adds a new sale transaction. */
 
 
