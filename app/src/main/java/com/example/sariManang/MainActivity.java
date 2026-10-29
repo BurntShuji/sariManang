@@ -42,11 +42,15 @@ public class MainActivity extends AppCompatActivity {
               Log.e(TAG, "Failed to get username", e);
             });
 
-        // Section 2: Set up quick action listeners
-        findViewById(R.id.btnNewSale).setOnClickListener(v -> DialogHelper.showNewSale(this, (item, qty, price) -> {
-            SalesRepository.addSale(this, item, qty, price);
+      // Section 2: Set up quick action listeners
+      findViewById(R.id.btnNewSale).setOnClickListener(v ->
+          DialogHelper.showNewSale(this, InventoryActivity.items, (cartItems, grandTotal) -> {
+            for (DialogHelper.CartItem ci : cartItems) {
+              SalesRepository.addSale(this, ci.item, ci.qty, ci.price);
+            }
             renderTodaySales();
-        }));
+          })
+      );
 
         findViewById(R.id.btnRecordUtang).setOnClickListener(v -> DialogHelper.showRecordUtang(this, (customer, amount, date) -> {
             UtangRepository.addUtang(this, customer, amount, date);
