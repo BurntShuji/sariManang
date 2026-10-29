@@ -21,12 +21,18 @@ import java.util.Locale;
  */
 public class MainActivity extends AppCompatActivity {
 
-    @Override
+  private userIDManager userid;
+  private String id;
+  private dbManager DBHelper;
+
+
+  @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
 
-        dbManager DBHelper = new dbManager();
-        userIDManager userid = new userIDManager(MainActivity.this);
+       DBHelper = new dbManager();
+        userid = new userIDManager(MainActivity.this);
+        id = userid.getUserID();
         setContentView(R.layout.homepage);
 
         String user = userid.getUserID();
@@ -87,71 +93,98 @@ public class MainActivity extends AppCompatActivity {
 
     /** Dynamically populates the unpaid and overdue utang list on homepage. */
     private void renderUtang() {
-        LinearLayout container = findViewById(R.id.listOverdueUtang);
-        if (container == null) return;
-        container.removeAllViews();
+      LinearLayout container = findViewById(R.id.listOverdueUtang);
+      if (container == null) return;
 
-        List<Utang> list = UtangRepository.getUnpaidUtangList();
-        double total = 0;
-        int count = 0;
+      container.removeAllViews();
 
-        for (Utang u : list) {
-            total += u.amount;
+      UtangRepository.getUnpaidUtangList(id, DBHelper)
+          .addOnSuccessListener(list -> {
 
-            LinearLayout row = new LinearLayout(this);
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            row.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-            row.setPadding(0, 8, 0, 8);
-            row.setGravity(Gravity.CENTER_VERTICAL);
+            // Clear again after the data finishes loading
+            container.removeAllViews();
 
-            TextView tvName = new TextView(this);
-            tvName.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-            tvName.setText(u.customer);
-            tvName.setTextColor(ContextCompat.getColor(this, R.color.text_dark));
-            tvName.setTextSize(13);
+            double total = 0;
+            int count = 0;
 
-            TextView tvAmount = new TextView(this);
-            tvAmount.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-            tvAmount.setText(String.format(Locale.US, "₱%,.2f", u.amount));
-            tvAmount.setTextColor(ContextCompat.getColor(this, R.color.text_dark));
-            tvAmount.setTextSize(13);
-            tvAmount.setPadding(0, 0, 24, 0);
+            for (Utang u : list) {
+              total += u.amount;
 
-            TextView tvStatus = new TextView(this);
-            tvStatus.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-            tvStatus.setText(u.getStatusText());
-            tvStatus.setTextSize(13);
-            tvStatus.setTypeface(null, android.graphics.Typeface.BOLD);
+              LinearLayout row = new LinearLayout(this);
+              row.setOrientation(LinearLayout.HORIZONTAL);
+              row.setLayoutParams(new LinearLayout.LayoutParams(
+                  LinearLayout.LayoutParams.MATCH_PARENT,
+                  LinearLayout.LayoutParams.WRAP_CONTENT
+              ));
+              row.setPadding(0, 8, 0, 8);
+              row.setGravity(Gravity.CENTER_VERTICAL);
 
-            if (u.isOverdue()) {
-                tvStatus.setTextColor(ContextCompat.getColor(this, R.color.red_dark));
-            } else {
-                tvStatus.setTextColor(ContextCompat.getColor(this, R.color.text_dark));
+              TextView tvName = new TextView(this);
+              tvName.setLayoutParams(new LinearLayout.LayoutParams(
+                  0,
+                  LinearLayout.LayoutParams.WRAP_CONTENT,
+                  1f
+              ));
+              tvName.setText(u.customer);
+              tvName.setTextColor(ContextCompat.getColor(this, R.color.text_dark));
+              tvName.setTextSize(13);
+
+              TextView tvAmount = new TextView(this);
+              tvAmount.setLayoutParams(new LinearLayout.LayoutParams(
+                  LinearLayout.LayoutParams.WRAP_CONTENT,
+                  LinearLayout.LayoutParams.WRAP_CONTENT
+              ));
+              tvAmount.setText(String.format(Locale.US, "₱%,.2f", u.amount));
+              tvAmount.setTextColor(ContextCompat.getColor(this, R.color.text_dark));
+              tvAmount.setTextSize(13);
+              tvAmount.setPadding(0, 0, 24, 0);
+
+              TextView tvStatus = new TextView(this);
+              tvStatus.setLayoutParams(new LinearLayout.LayoutParams(
+                  LinearLayout.LayoutParams.WRAP_CONTENT,
+                  LinearLayout.LayoutParams.WRAP_CONTENT
+              ));
+              tvStatus.setText(u.getStatusText());
+              tvStatus.setTextSize(13);
+              tvStatus.setTypeface(null, android.graphics.Typeface.BOLD);
+
+              if (u.isOverdue()) {
+                tvStatus.setTextColor(
+                    ContextCompat.getColor(this, R.color.red_dark)
+                );
+              } else {
+                tvStatus.setTextColor(
+                    ContextCompat.getColor(this, R.color.text_dark)
+                );
+              }
+
+              row.addView(tvName);
+              row.addView(tvAmount);
+              row.addView(tvStatus);
+
+              container.addView(row);
+              count++;
             }
 
-            row.addView(tvName);
-            row.addView(tvAmount);
-            row.addView(tvStatus);
+            if (count == 0) {
+              TextView empty = new TextView(this);
+              empty.setText("No pending utang");
+              empty.setTextColor(ContextCompat.getColor(this, R.color.muted));
+              empty.setTextSize(12);
+              empty.setPadding(0, 8, 0, 8);
+              container.addView(empty);
+            }
 
-            container.addView(row);
-            count++;
-        }
+            TextView tvSummary = findViewById(R.id.tvHomeUtangSummary);
 
-        if (count == 0) {
-            TextView empty = new TextView(this);
-            empty.setText("No pending utang");
-            empty.setTextColor(ContextCompat.getColor(this, R.color.muted));
-            empty.setTextSize(12);
-            empty.setPadding(0, 8, 0, 8);
-            container.addView(empty);
-        }
-
-        TextView tvSummary = findViewById(R.id.tvHomeUtangSummary);
-        if (tvSummary != null) {
-            tvSummary.setText(String.format(Locale.US, "Total: ₱%,.2f", total));
-        }
+            if (tvSummary != null) {
+              tvSummary.setText(
+                  String.format(Locale.US, "Total: ₱%,.2f", total)
+              );
+            }
+          })
+          .addOnFailureListener(e ->
+              Log.e("UTANG", "Failed to load unpaid debts", e)
+          );
     }
 }

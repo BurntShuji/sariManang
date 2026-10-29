@@ -62,6 +62,8 @@ public class SupplierActivity extends AppCompatActivity {
             public void afterTextChanged(Editable e) { render(); }
         });
 
+        render();
+
         // Section 4: Add supplier listener
         findViewById(R.id.btnAddSupplier).setOnClickListener(v -> DialogHelper.showAddSupplier(this,
                 (n, c) -> {
