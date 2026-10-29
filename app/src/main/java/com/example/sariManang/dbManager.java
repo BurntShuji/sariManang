@@ -11,8 +11,10 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class dbManager {
@@ -42,6 +44,8 @@ public class dbManager {
   public Task<QuerySnapshot> getAllUsers(){
     return db.collection("user").get();
   }
+
+
 
   public Task<String> getDebtID(String userid, String name, double amount, String due){
     return db.collection("user").document(userid).collection("debt").whereEqualTo("customer", name).whereEqualTo("amount",amount).whereEqualTo("dueDate", due)
@@ -148,6 +152,7 @@ public class dbManager {
 
 
   public void addTofield(String collection, Map<String, Object> item, String userid){
+    item.putIfAbsent("timestamp", System.currentTimeMillis());
     db.collection("user").document(userid).collection(collection)
         .add(item)
         .addOnSuccessListener(documentReference -> {
@@ -196,6 +201,7 @@ public class dbManager {
 
       Map<String, Object> updates = new HashMap<>();
       updates.put("quantity", FieldValue.increment(qty));
+      updates.put("timestamp", System.currentTimeMillis());
       if ((double) stock.get("price") > 0) updates.put("price", stock.get("price"));
       if (!((String) stock.get("expiry")).isEmpty()) updates.put("expiry", stock.get("expiry"));
       if (!((String) stock.get("batch")).isEmpty()) updates.put("batch", stock.get("batch"));
@@ -217,6 +223,33 @@ public class dbManager {
       }
       return doc.getReference().update("quantity", FieldValue.increment(-soldQty));
     });
+  }
+
+  private static final long RETENTION_MS = 30L * 24 * 60 * 60 * 1000;
+
+  private void purge(String userid, String collection, long cutoff) {
+    db.collection("user").document(userid).collection(collection)
+        .whereLessThan("timestamp", cutoff)
+        .get()
+        .addOnSuccessListener(snap -> {
+          List<DocumentSnapshot> docs = snap.getDocuments();
+          for (int i = 0; i < docs.size(); i += 400) {
+            WriteBatch batch = db.batch();
+            for (DocumentSnapshot d : docs.subList(i, Math.min(i + 400, docs.size()))) {
+              batch.delete(d.getReference());
+            }
+            batch.commit().addOnFailureListener(e -> Log.e("PURGE", collection + " failed", e));
+          }
+        })
+        .addOnFailureListener(e -> Log.e("PURGE", collection + " query failed", e));
+  }
+
+  public void purgeOldData(String userid) {
+    long cutoff = System.currentTimeMillis() - RETENTION_MS;
+    purge(userid, "sales", cutoff);
+    purge(userid, "debt", cutoff);
+    purge(userid, "stock", cutoff);
+    purge(userid, "suppliers", cutoff);
   }
 
 

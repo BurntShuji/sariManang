@@ -90,6 +90,7 @@ public class UtangRepository {
       utang.put("amount", amount);
       utang.put("dueDate", dueDate);
       utang.put("paid", false);
+      utang.put("timestamp", System.currentTimeMillis());
 
       FirebaseFirestore.getInstance()
           .collection("user").document(currentUserID).collection("debt")
