@@ -8,7 +8,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Map;
@@ -154,6 +153,14 @@ public class dbManager {
         .addOnFailureListener(e -> {
           Log.w(TAG, "Error adding", e);
         });
+  }
+
+  public Task<QuerySnapshot> LoginChecker(String u, String p){
+      return FirebaseFirestore.getInstance()
+          .collection("user")
+          .whereEqualTo("username", u)
+          .whereEqualTo("password", p)
+          .get();
   }
 
 
