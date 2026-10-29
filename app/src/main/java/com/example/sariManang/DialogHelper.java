@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * helper class for building and displaying input dialog pop-ups.
@@ -242,10 +243,12 @@ public class DialogHelper {
           double grandTotal = cartList.stream().mapToDouble(ci -> (ci.qty * ci.price)).sum();
           btnSave.setEnabled(false);
 
-          List<com.google.android.gms.tasks.Task<Void>> updates = new ArrayList<>();
+          Map<String, Integer> totals = new java.util.LinkedHashMap<>();
+          for (CartItem ci : cartList) totals.merge(ci.item, ci.qty, Integer::sum);
 
-          for (CartItem ci : cartList) {
-            updates.add(db.subtractStock(userid, ci.item, ci.qty));
+          List<com.google.android.gms.tasks.Task<Void>> updates = new ArrayList<>();
+          for (Map.Entry<String, Integer> en : totals.entrySet()) {
+            updates.add(db.subtractStock(userid, en.getKey(), en.getValue()));
           }
 
           Tasks.whenAll(updates)
