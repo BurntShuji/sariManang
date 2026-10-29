@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -32,9 +33,14 @@ import java.util.Map;
  */
 public class SupplierActivity extends AppCompatActivity {
 
-    private final List<Supplier> suppliers = new ArrayList<>();
+    private static final List<Supplier> suppliers = new ArrayList<>();
     private LinearLayout list, favs;
     private EditText search;
+
+  private userIDManager user;
+  private String id;
+  private dbManager db = new dbManager();
+
 
     @Override
     protected void onCreate(Bundle b) {
@@ -42,6 +48,8 @@ public class SupplierActivity extends AppCompatActivity {
         super.onCreate(b);
         setContentView(R.layout.supplierpage);
 
+      user = new userIDManager(SupplierActivity.this);
+      id = user.getUserID();
         // Section 1: Toolbar & Navigation setup
         NavigationHelper.setupToolbar(this, "Suppliers");
         NavigationHelper.setup(this, R.id.navSuppliers);
@@ -62,15 +70,16 @@ public class SupplierActivity extends AppCompatActivity {
             public void afterTextChanged(Editable e) { render(); }
         });
 
-        render();
+        loadSuppliers();
 
         // Section 4: Add supplier listener
-        findViewById(R.id.btnAddSupplier).setOnClickListener(v -> DialogHelper.showAddSupplier(this,
-                (n, c) -> {
-                suppliers.add(0, new Supplier(n, c.isEmpty() ? "No contact" : c, 0, 0, false));
-                addSupplier(this, n, c.isEmpty() ? "No contact" : c);
-                render();
-                }));
+      findViewById(R.id.btnAddSupplier).setOnClickListener(v ->
+          DialogHelper.showAddSupplier(this, (n, c) -> {
+            String contact = c.isEmpty() ? "No contact" : c;
+
+            addSupplier(this, n, contact);
+          }, db)
+      );
     }
 
 
@@ -130,7 +139,7 @@ public class SupplierActivity extends AppCompatActivity {
             });
 
             // Log delivery quality button
-            v.findViewById(R.id.btnLogQuality).setOnClickListener(x -> DialogHelper.showLogQuality(this, s, this::render));
+            v.findViewById(R.id.btnLogQuality).setOnClickListener(x -> DialogHelper.showLogQuality(this, s, id, db, this::render));
 
             list.addView(v);
         }
@@ -191,6 +200,33 @@ public class SupplierActivity extends AppCompatActivity {
           .addOnFailureListener(e -> {
             Log.w(TAG, "Error adding sale", e);
           });
-
     }
+
+    public List<Supplier> loadSuppliers(){
+      db.getAllSuppliers(id)
+          .addOnSuccessListener(snapshot -> {
+            suppliers.clear();
+
+            for(int i = 0; i < snapshot.getDocuments().size(); i++){
+              DocumentSnapshot doc = snapshot.getDocuments().get(i);
+
+              String supplier = doc.getString("supplier");
+              String contact = doc.getString("contact");
+              int good = doc.getLong("good").intValue();
+              int bad = doc.getLong("bad").intValue();
+              Boolean favorite = doc.getBoolean("favorite");
+
+
+              suppliers.add(new Supplier(supplier, contact, good, bad, favorite));
+            }
+
+            render();
+          })
+          .addOnFailureListener(e ->
+              Log.e("SALES", "Failed to load sales", e)
+          );
+      return suppliers;
+    }
+
+
 }
