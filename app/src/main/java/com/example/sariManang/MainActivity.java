@@ -8,6 +8,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -60,13 +62,50 @@ public class MainActivity extends AppCompatActivity {
 
     // Section 2: Set up quick action listeners
     View btnNewSale = findViewById(R.id.btnNewSale);
+
     if (btnNewSale != null) {
       btnNewSale.setOnClickListener(v ->
           DialogHelper.showNewSale(this, testInventory, (cartItems, grandTotal) -> {
-            for (DialogHelper.CartItem ci : cartItems) {
-              SalesRepository.addSale(this, ci.item, ci.qty, ci.price);
+
+            if (cartItems.isEmpty()) {
+              return;
             }
-            renderTodaySales();
+
+            final int[] remaining = {cartItems.size()};
+            final boolean[] failed = {false};
+
+            for (DialogHelper.CartItem ci : cartItems) {
+              SalesRepository.addSale(
+                  this,
+                  ci.item,
+                  ci.qty,
+                  ci.price,
+                  () -> {
+                    remaining[0]--;
+
+                    if (remaining[0] == 0 && !failed[0]) {
+                      runOnUiThread(() -> {
+                        renderTodaySales();
+
+                        Toast.makeText(
+                            this,
+                            "Sale saved successfully",
+                            Toast.LENGTH_SHORT
+                        ).show();
+                      });
+                    }
+                  },
+                  error -> runOnUiThread(() -> {
+                    failed[0] = true;
+
+                    Toast.makeText(
+                        this,
+                        "Failed to save sale: " + error.getMessage(),
+                        Toast.LENGTH_LONG
+                    ).show();
+                  })
+              );
+            }
           })
       );
     }

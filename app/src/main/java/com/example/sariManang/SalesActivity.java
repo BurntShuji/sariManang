@@ -65,12 +65,44 @@ public class SalesActivity extends AppCompatActivity {
                   a != null ? a.intValue() : 0));
             }
 
+
             DialogHelper.showNewSale(this, InventoryActivity.items, (cartItems, grandTotal) -> {
+              final int[] remaining = {cartItems.size()};
+              final boolean[] failed = {false};
+
               for (DialogHelper.CartItem ci : cartItems) {
-                SalesRepository.addSale(this, ci.item, ci.qty, ci.price);
+                SalesRepository.addSale(
+                    this,
+                    ci.item,
+                    ci.qty,
+                    ci.price,
+                    () -> {
+                      remaining[0]--;
+
+                      if (remaining[0] == 0 && !failed[0]) {
+                        runOnUiThread(() -> {
+                          renderSales();
+
+                          Toast.makeText(
+                              this,
+                              "Sale saved successfully",
+                              Toast.LENGTH_SHORT
+                          ).show();
+                        });
+                      }
+                    },
+                    error -> runOnUiThread(() -> {
+                      failed[0] = true;
+                      Toast.makeText(
+                          this,
+                          "Failed to save sale: " + error.getMessage(),
+                          Toast.LENGTH_LONG
+                      ).show();
+                    })
+                );
               }
-              renderSales();
             });
+
           })
       );
     }
@@ -206,7 +238,9 @@ public class SalesActivity extends AppCompatActivity {
       Map<String, Integer> totals = new LinkedHashMap<>();
 
       for (SalesRepository.SaleRecord r : records) {
-        totals.merge(r.item, r.qty, Integer::sum);
+        if (r.item != null && !r.item.trim().isEmpty()) {
+          totals.merge(r.item, r.qty, Integer::sum);
+        }
       }
 
       String best = null;

@@ -28,16 +28,13 @@ import java.util.Objects;
 public class SalesRepository {
 
 
-
-
-
     /** Model representing an individual sale record. */
     public static class SaleRecord {
         public String date;
         public String item;
         public int qty;
         public double price;
-
+        public long timestamp;
         public SaleRecord(String date, String item, int qty, double price) {
             this.date = date;
             this.item = item;
@@ -78,30 +75,42 @@ public class SalesRepository {
     }
 
     /** Adds a new sale transaction. */
-    public static void addSale(Context context, String item, int qty, double price) {
-        records.add(0, new SaleRecord(getTodayFormatted(), item, qty, price));
-      String currentUserID = context.getSharedPreferences("MyUserPrefs", Context.MODE_PRIVATE)
-          .getString("userid", null);
+
+
+    public static void addSale(
+        Context context,
+        String item,
+        int qty,
+        double price,
+        Runnable onSuccess,
+        java.util.function.Consumer<Exception> onFailure
+    ) {
+      userIDManager userManager = new userIDManager(context);
+      String currentUserID = userManager.getUserID();
+
+      if (currentUserID == null || currentUserID.trim().isEmpty()) {
+        onFailure.accept(new Exception("User ID is missing."));
+        return;
+      }
+
       Map<String, Object> sale = new HashMap<>();
-        sale.put("date", getTodayFormatted());
-        sale.put("item", item);
-        sale.put("quantity", qty);
-        sale.put("price", price);
-
-      FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-      db.collection("user").document(currentUserID).collection("sales")
+      sale.put("date", getTodayFormatted());
+      sale.put("item", item);
+      sale.put("quantity", qty);
+      sale.put("price", price);
+      sale.put("timestamp", System.currentTimeMillis());
+      FirebaseFirestore.getInstance()
+          .collection("user")
+          .document(currentUserID)
+          .collection("sales")
           .add(sale)
-          .addOnSuccessListener(documentReference -> {
-            Log.d(TAG, "Sale added with ID: " + documentReference.getId());
-          })
-          .addOnFailureListener(e -> {
-            Log.w(TAG, "Error adding sale", e);
-          });
-
+          .addOnSuccessListener(documentReference -> onSuccess.run())
+          .addOnFailureListener(onFailure::accept);
     }
 
-    /** Calculates total sales amount for today. */
+
+
+  /** Calculates total sales amount for today. */
     public static double getTodayTotalSales() {
         String today = getTodayFormatted();
         double total = 0;
@@ -136,19 +145,29 @@ public class SalesRepository {
   ) {
     db.getAllSales(userid)
         .addOnSuccessListener(querySnapshot -> {
+          Log.d("SALES", "Loading sales for user ID: " + userid);
+          Log.d("SALES", "Documents found: " + querySnapshot.size());
+
           records.clear();
 
           for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
             Long quantity = doc.getLong("quantity");
             Double price = doc.getDouble("price");
+            Long ts = doc.getLong("timestamp");
 
-            records.add(new SaleRecord(
+            SaleRecord r = new SaleRecord(
                 doc.getString("date"),
                 doc.getString("item"),
                 quantity != null ? quantity.intValue() : 0,
                 price != null ? price : 0.0
-            ));
+            );
+            r.timestamp = ts != null ? ts : 0L;   // old sales without a timestamp go last
+            records.add(r);
           }
+
+          records.sort((a, b) -> Long.compare(b.timestamp, a.timestamp));   // newest first
+
+          callback.onLoaded(new ArrayList<>(records));
 
           callback.onLoaded(new ArrayList<>(records));
         })

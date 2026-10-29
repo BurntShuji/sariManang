@@ -13,6 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.gms.tasks.Tasks;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -23,6 +25,7 @@ import java.util.Locale;
  * Handles validation and delegates callback execution to listeners.
  */
 public class DialogHelper {
+
 
     /** Callback interface for logging a new sale. */
     public interface SaleListener {
@@ -110,6 +113,11 @@ public class DialogHelper {
 
     /** Displays "Log Sale" dialog popup. */
     public static void showNewSale(Context c, List<InventoryActivity.Item> inventoryItems, SaleListener l) {
+      dbManager db = new dbManager();
+
+      userIDManager user = new userIDManager(c);
+      String userid = user.getUserID();
+
       AlertDialog d = open(c, R.layout.dialognewsale);
 
       EditText item = d.findViewById(R.id.etItem);
@@ -190,7 +198,7 @@ public class DialogHelper {
             item.setError("Choose an item from inventory");
             return;
           }
-          if (num(qty) > match.qty) {   // optional: stop selling more than you have
+          if (num(qty) > match.qty) {
             qty.setError("Only " + match.qty + " in stock");
             return;
           }
@@ -199,17 +207,14 @@ public class DialogHelper {
           int itemQty = (int) num(qty);
           double itemPrice = num(price);
 
-          // Add item to temporary transaction array
           cartList.add(new CartItem(itemName, itemQty, itemPrice));
 
-          // Display row in cart UI
           TextView rowView = new TextView(c);
           rowView.setText(String.format(Locale.US, "• %s x%d - ₱%,.2f", itemName, itemQty, itemQty * itemPrice));
           rowView.setTextSize(13);
           rowView.setPadding(0, 4, 0, 4);
           if (cartContainer != null) cartContainer.addView(rowView);
 
-          // Calculate and display cumulative grand total
           double grandTotal = 0;
           for (CartItem ci : cartList) {
             grandTotal += (ci.qty * ci.price);
@@ -218,7 +223,7 @@ public class DialogHelper {
             total.setText(String.format(Locale.US, "Total: ₱%,.2f", grandTotal));
           }
 
-          // Clear inputs for the next entry
+
           item.setText("");
           qty.setText("");
           price.setText("");
@@ -234,14 +239,33 @@ public class DialogHelper {
             return;
           }
 
-          double grandTotal = 0;
+          double grandTotal = cartList.stream().mapToDouble(ci -> (ci.qty * ci.price)).sum();
+          btnSave.setEnabled(false);
+
+          List<com.google.android.gms.tasks.Task<Void>> updates = new ArrayList<>();
+
           for (CartItem ci : cartList) {
-            grandTotal += (ci.qty * ci.price);
+            updates.add(db.subtractStock(userid, ci.item, ci.qty));
           }
 
-          if (l != null) l.onSale(cartList, grandTotal);
-          Toast.makeText(c, "Sale logged", Toast.LENGTH_SHORT).show();
-          d.dismiss();
+          Tasks.whenAll(updates)
+              .addOnSuccessListener(unused -> {
+                if (l != null) {
+                  l.onSale(cartList, grandTotal);
+                }
+
+                Toast.makeText(c, "Sale logged", Toast.LENGTH_SHORT).show();
+                d.dismiss();
+              })
+              .addOnFailureListener(e -> {
+                btnSave.setEnabled(true);
+
+                Toast.makeText(
+                    c,
+                    "Failed to update stock: " + e.getMessage(),
+                    Toast.LENGTH_LONG
+                ).show();
+              });
         });
       }
     }
