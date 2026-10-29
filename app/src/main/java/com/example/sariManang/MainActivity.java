@@ -5,12 +5,14 @@ import static android.content.ContentValues.TAG;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -48,15 +50,24 @@ public class MainActivity extends AppCompatActivity {
               Log.e(TAG, "Failed to get username", e);
             });
 
+      //dummy stocks lang 'to ha
+      List<InventoryActivity.Item> testInventory = new ArrayList<>();
+      testInventory.add(new InventoryActivity.Item("Lucky Me Instant Noodle", 100, 15.00, "", "", 10));
+      testInventory.add(new InventoryActivity.Item("Coca-Cola 1.5L", 50, 65.00, "", "", 5));
+      testInventory.add(new InventoryActivity.Item("Bear Brand Powdered Milk 33g", 80, 18.50, "", "", 10));
+
       // Section 2: Set up quick action listeners
-      findViewById(R.id.btnNewSale).setOnClickListener(v ->
-          DialogHelper.showNewSale(this, InventoryActivity.items, (cartItems, grandTotal) -> {
+    View btnNewSale = findViewById(R.id.btnNewSale);
+    if (btnNewSale != null) {
+      btnNewSale.setOnClickListener(v ->
+          DialogHelper.showNewSale(this, testInventory, (cartItems, grandTotal) -> {
             for (DialogHelper.CartItem ci : cartItems) {
               SalesRepository.addSale(this, ci.item, ci.qty, ci.price);
             }
             renderTodaySales();
           })
       );
+    }
 
         findViewById(R.id.btnRecordUtang).setOnClickListener(v -> DialogHelper.showRecordUtang(this, (customer, amount, date) -> {
             UtangRepository.addUtang(this, customer, amount, date);
