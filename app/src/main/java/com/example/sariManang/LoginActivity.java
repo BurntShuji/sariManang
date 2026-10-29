@@ -24,16 +24,19 @@ import java.util.Map;
 public class LoginActivity extends AppCompatActivity {
   private boolean signUp = false, showPass = false;
 
-  FirebaseFirestore db = FirebaseFirestore.getInstance();
-
+  private userIDManager userm;
+  private String id;
+  private dbManager db = new dbManager();
 
   @Override
   protected void onCreate(Bundle b) {
     super.onCreate(b);
 
-    userIDManager userIDManager = new userIDManager(LoginActivity.this);
+    userm = new userIDManager(LoginActivity.this);
+    id = userm.getUserID();
 
-    if(userIDManager.getUserID() == null) {
+
+    if(id == null) {
       setContentView(R.layout.loginpage);
       EditText user = findViewById(R.id.etUser), pass = findViewById(R.id.etPassword), confirm = findViewById(R.id.etConfirm);
       TextView title = findViewById(R.id.tvTitle), btn = findViewById(R.id.btnLogin), sw = findViewById(R.id.tvSwitch);
@@ -79,50 +82,28 @@ public class LoginActivity extends AppCompatActivity {
           Map<String, Object> credens = new HashMap<>();
           credens.put("username", u);
           credens.put("password", p);
-          String userID = db.collection("user").document().getId();
-          db.collection("user").document(userID)
-              .set(credens)
-              .addOnSuccessListener(aVoid -> {
-                Toast.makeText(LoginActivity.this, "Sign up successful!", Toast.LENGTH_SHORT).show();
-                sw.performClick();
-                user.setText("");
-                pass.setText("");
-                confirm.setText("");
-              })
-              .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
-
+          db.addTofield("user",credens,id);
         } else {
-          db.collection("user")
-              .whereEqualTo("username", u)
-              .whereEqualTo("password", p)
-              .get()
+
+          db.LoginChecker(u, p)
               .addOnSuccessListener(queryDocumentSnapshots -> {
                 if (!queryDocumentSnapshots.isEmpty()) {
-                  DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(0);
+                  DocumentSnapshot doc = queryDocumentSnapshots.getDocuments().get(0);
+                  String userid = doc.getId();
+                  Toast.makeText(LoginActivity.this, "Welcome! ID: " + doc, Toast.LENGTH_SHORT).show();
 
-                  String documentId = document.getId();
 
-                  Toast.makeText(LoginActivity.this, "Welcome! ID: " + documentId, Toast.LENGTH_SHORT).show();
-                  Intent in = new Intent(this, MainActivity.class);
-                  in.putExtra("name", u.contains("@") ? u.substring(0, u.indexOf('@')) : u);
-                  getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
-                      .edit()
-                      .putString("userid", documentId)
-                      .apply();
+                  userm.saveUserId(userid);
 
-                  userIDManager.saveUserId(documentId);
-
-                  in = new Intent(LoginActivity.this, MainActivity.class);
+                  Intent in = new Intent(LoginActivity.this, MainActivity.class);
                   in.putExtra("name", u.contains("@") ? u.substring(0, u.indexOf('@')) : u);
                   startActivity(in);
                   finish();
-
                 } else {
                   Toast.makeText(LoginActivity.this, "Incorrect username or password", Toast.LENGTH_SHORT).show();
                 }
               });
         }
-
       });
     }
     else{

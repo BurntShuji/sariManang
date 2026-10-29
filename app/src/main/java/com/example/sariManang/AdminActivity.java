@@ -30,9 +30,9 @@ public class AdminActivity extends AppCompatActivity {
     long lastActive;
 
     User(String id, String name, String email, long l) {
-      id = this.id;
-      name = this.name;
-      email = this.email;
+      this.id = id;
+      this.name = name;
+      this.email = email;
       lastActive = l;
     }
   }
@@ -62,6 +62,7 @@ public class AdminActivity extends AppCompatActivity {
 
 
 
+
         ListView lv = findViewById(R.id.lvUsers);
         lv.setEmptyView(findViewById(R.id.tvEmpty));
 
@@ -69,7 +70,7 @@ public class AdminActivity extends AppCompatActivity {
         adapter = new BaseAdapter() {
             public int getCount() { return shown.size(); }
             public Object getItem(int p) { return shown.get(p); }
-            public long getItemId(int p) { return shown.get(p).id; }
+            public long getItemId(int p) { return p; }
             public View getView(int p, View v, ViewGroup parent) {
                 if (v == null) v = getLayoutInflater().inflate(R.layout.itemuser, parent, false);
                 User u = shown.get(p);
@@ -90,6 +91,8 @@ public class AdminActivity extends AppCompatActivity {
             public void afterTextChanged(Editable e) { refresh(); }
         });
         refresh();
+
+        loadUsers(db);
     }
 
     // gets inputted search, clears and filters list

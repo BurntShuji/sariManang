@@ -110,60 +110,122 @@ public class SalesActivity extends AppCompatActivity {
   }
 
   /** Renders sales history, average estimates, and best/least selling item analytics. */
+
   private void renderSales() {
     LinearLayout list = findViewById(R.id.listHistory);
+    if (list == null) return;
+
     list.removeAllViews();
 
-    List<SalesRepository.SaleRecord> records = SalesRepository.getRecords(id, db);
-    int n = expanded ? records.size() : Math.min(2, records.size());
-
-    if (records.isEmpty()) {
-      TextView e = new TextView(this);
-      e.setText("No sales logged yet. Tap + Log Sale.");
-      e.setPadding(0, 30, 0, 30);
-      list.addView(e);
-    }
-
-    for (int i = 0; i < n; i++) {
-      SalesRepository.SaleRecord r = records.get(i);
-      LinearLayout row = new LinearLayout(this);
-      row.setPadding(0, 18, 0, 18);
-      row.setGravity(Gravity.CENTER_VERTICAL);
-      row.addView(tv(r.item + "\n₱" + String.format(Locale.US, "%.2f", r.price), 2f, Gravity.START, false));
-      row.addView(tv("Qty: " + r.qty, 1f, Gravity.CENTER, false));
-      row.addView(tv(String.format(Locale.US, "Total\n₱%,.2f", r.getTotal()), 1.2f, Gravity.END, true));
-      list.addView(row);
-    }
-
-    // Calculate sales estimates
     TextView est = findViewById(R.id.tvEstimate);
-    if (records.size() < 5) {
-      est.setText("Log " + (5 - records.size()) + " more sale(s) to unlock estimates.");
-    } else {
-      double sum = 0;
-      for (SalesRepository.SaleRecord r : records) {
-        sum += r.getTotal();
+    TextView tvBest = findViewById(R.id.tvBest);
+    TextView tvLeast = findViewById(R.id.tvLeast);
+
+    SalesRepository.loadRecords(id, db, records -> {
+      // Refresh the history list using the newly loaded records
+      list.removeAllViews();
+
+      int n = expanded ? records.size() : Math.min(2, records.size());
+
+      if (records.isEmpty()) {
+        TextView e = new TextView(this);
+        e.setText("No sales logged yet. Tap + Log Sale.");
+        e.setPadding(0, 30, 0, 30);
+        list.addView(e);
       }
-      est.setText(String.format(Locale.US, "Average per sale: ₱%,.2f (based on %d records)", sum / records.size(), records.size()));
-    }
 
-    // Calculate best-selling and least-selling products
-    Map<String, Integer> totals = new LinkedHashMap<>();
-    for (SalesRepository.SaleRecord r : records) {
-      totals.merge(r.item, r.qty, Integer::sum);
-    }
+      for (int i = 0; i < n; i++) {
+        SalesRepository.SaleRecord r = records.get(i);
 
-    String best = null, least = null;
-    for (Map.Entry<String, Integer> e : totals.entrySet()) {
-      if (best == null || e.getValue() > totals.get(best)) best = e.getKey();
-      if (least == null || e.getValue() < totals.get(least)) least = e.getKey();
-    }
+        LinearLayout row = new LinearLayout(this);
+        row.setPadding(0, 18, 0, 18);
+        row.setGravity(Gravity.CENTER_VERTICAL);
 
-    ((TextView) findViewById(R.id.tvBest)).setText(best == null ? "—" : best + "\nSold this month: " + totals.get(best));
-    ((TextView) findViewById(R.id.tvLeast)).setText(least == null ? "—" : least + "\nSold this month: " + totals.get(least));
+        row.addView(tv(
+            r.item + "\n₱" +
+                String.format(Locale.US, "%.2f", r.price),
+            2f, Gravity.START, false
+        ));
 
-    renderProductSales(totals);
+        row.addView(tv(
+            "Qty: " + r.qty,
+            1f, Gravity.CENTER, false
+        ));
+
+        row.addView(tv(
+            String.format(
+                Locale.US,
+                "Total\n₱%,.2f",
+                r.getTotal()
+            ),
+            1.2f, Gravity.END, true
+        ));
+
+        list.addView(row);
+      }
+
+      // Calculate sales estimates
+      if (est != null) {
+        if (records.size() < 5) {
+          est.setText(
+              "Log " + (5 - records.size()) +
+                  " more sale(s) to unlock estimates."
+          );
+        } else {
+          double sum = 0;
+
+          for (SalesRepository.SaleRecord r : records) {
+            sum += r.getTotal();
+          }
+
+          est.setText(String.format(
+              Locale.US,
+              "Average per sale: ₱%,.2f (based on %d records)",
+              sum / records.size(),
+              records.size()
+          ));
+        }
+      }
+
+      // Calculate best-selling and least-selling products
+      Map<String, Integer> totals = new LinkedHashMap<>();
+
+      for (SalesRepository.SaleRecord r : records) {
+        totals.merge(r.item, r.qty, Integer::sum);
+      }
+
+      String best = null;
+      String least = null;
+
+      for (Map.Entry<String, Integer> e : totals.entrySet()) {
+        if (best == null ||
+            e.getValue() > totals.get(best)) {
+          best = e.getKey();
+        }
+
+        if (least == null ||
+            e.getValue() < totals.get(least)) {
+          least = e.getKey();
+        }
+      }
+
+      if (tvBest != null) {
+        tvBest.setText(best == null
+            ? "—"
+            : best + "\nSold: " + totals.get(best));
+      }
+
+      if (tvLeast != null) {
+        tvLeast.setText(least == null
+            ? "—"
+            : least + "\nSold: " + totals.get(least));
+      }
+
+      // Refresh the product sales breakdown
+      renderProductSales(totals);
+    });
   }
+
 
   private void renderProductSales(Map<String, Integer> totals) {
     LinearLayout list = findViewById(R.id.listProductSales);

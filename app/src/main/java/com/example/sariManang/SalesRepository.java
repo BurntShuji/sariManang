@@ -51,15 +51,6 @@ public class SalesRepository {
     }
 
     private static final List<SaleRecord> records = new ArrayList<>();
-
-    static {
-        // Initial sample sales records for today
-        String today = getTodayFormatted();
-        records.add(new SaleRecord(today, "Pocari Sweat", 2, 36.5));
-        records.add(new SaleRecord(today, "Always Ultra Thin", 3, 62.0));
-        records.add(new SaleRecord(today, "Nestle All-Purpose Cream", 1, 28.0));
-    }
-
     /** Returns formatted date string for today. */
     public static String getTodayFormatted() {
         return new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()).format(new Date());
@@ -133,4 +124,36 @@ public class SalesRepository {
         }
         return count;
     }
+
+  public interface SalesLoadedCallback {
+    void onLoaded(List<SaleRecord> records);
+  }
+
+  public static void loadRecords(
+      String userid,
+      dbManager db,
+      SalesLoadedCallback callback
+  ) {
+    db.getAllSales(userid)
+        .addOnSuccessListener(querySnapshot -> {
+          records.clear();
+
+          for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+            Long quantity = doc.getLong("quantity");
+            Double price = doc.getDouble("price");
+
+            records.add(new SaleRecord(
+                doc.getString("date"),
+                doc.getString("item"),
+                quantity != null ? quantity.intValue() : 0,
+                price != null ? price : 0.0
+            ));
+          }
+
+          callback.onLoaded(new ArrayList<>(records));
+        })
+        .addOnFailureListener(e ->
+            Log.e("SALES", "Failed to load sales", e)
+        );
+  }
 }

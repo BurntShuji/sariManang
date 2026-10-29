@@ -96,21 +96,43 @@ public class MainActivity extends AppCompatActivity {
     renderBestLeast();
   }
 
-  /** Calculates and updates "Today's Total Sales" and transaction count on homepage. */
+  /**
+   * Calculates and updates "Today's Total Sales" and transaction count on homepage.
+   */
   private void renderTodaySales() {
-    TextView tvSales = findViewById(R.id.tvTodaySales);
-    TextView tvTrans = findViewById(R.id.tvTodayTransactions);
+    SalesRepository.loadRecords(id, DBHelper, records -> {
+      TextView tvSales = findViewById(R.id.tvTodaySales);
+      TextView tvTrans = findViewById(R.id.tvTodayTransactions);
 
-    if (tvSales != null) {
-      tvSales.setText(String.format(Locale.US, "₱ %,.2f", SalesRepository.getTodayTotalSales()));
-    }
-    if (tvTrans != null) {
-      int count = SalesRepository.getTodayTransactionCount();
-      tvTrans.setText(count + (count == 1 ? " transaction today" : " transactions today"));
-    }
+      String today = SalesRepository.getTodayFormatted();
+      double total = 0;
+      int count = 0;
+
+      for (SalesRepository.SaleRecord r : records) {
+        if (today.equals(r.date)) {
+          total += r.getTotal();
+          count++;
+        }
+      }
+
+      if (tvSales != null) {
+        tvSales.setText(String.format(
+            Locale.US, "₱ %,.2f", total
+        ));
+      }
+
+      if (tvTrans != null) {
+        tvTrans.setText(count +
+            (count == 1
+                ? " transaction today"
+                : " transactions today"));
+      }
+    });
   }
 
-  /** Dynamically populates the unpaid and overdue utang list on homepage. */
+  /**
+   * Dynamically populates the unpaid and overdue utang list on homepage.
+   */
   private void renderUtang() {
     LinearLayout container = findViewById(R.id.listOverdueUtang);
     if (container == null) return;
@@ -210,22 +232,35 @@ public class MainActivity extends AppCompatActivity {
   private void renderBestLeast() {
     TextView tvBest = findViewById(R.id.tvHomeBest);
     TextView tvLeast = findViewById(R.id.tvHomeLeast);
+
     if (tvBest == null || tvLeast == null) return;
 
-    List<SalesRepository.SaleRecord> records = SalesRepository.getRecords(id, DBHelper);
+    SalesRepository.loadRecords(id, DBHelper, records -> {
+      Map<String, Integer> totals = new LinkedHashMap<>();
 
-    Map<String, Integer> totals = new LinkedHashMap<>();
-    for (SalesRepository.SaleRecord r : records) {
-      totals.merge(r.item, r.qty, Integer::sum);
-    }
+      for (SalesRepository.SaleRecord r : records) {
+        totals.merge(r.item, r.qty, Integer::sum);
+      }
 
-    String best = null, least = null;
-    for (Map.Entry<String, Integer> e : totals.entrySet()) {
-      if (best == null || e.getValue() > totals.get(best)) best = e.getKey();
-      if (least == null || e.getValue() < totals.get(least)) least = e.getKey();
-    }
+      String best = null, least = null;
 
-    tvBest.setText(best == null ? "—" : best + "\nSold this month: " + totals.get(best));
-    tvLeast.setText(least == null ? "—" : least + "\nSold this month: " + totals.get(least));
+      for (Map.Entry<String, Integer> e : totals.entrySet()) {
+        if (best == null ||
+            e.getValue() > totals.get(best)) {
+          best = e.getKey();
+        }
+
+        if (least == null ||
+            e.getValue() < totals.get(least)) {
+          least = e.getKey();
+        }
+      }
+
+      tvBest.setText(best == null ? "—" :
+          best + "\nSold this month: " + totals.get(best));
+
+      tvLeast.setText(least == null ? "—" :
+          least + "\nSold this month: " + totals.get(least));
+    });
   }
 }
