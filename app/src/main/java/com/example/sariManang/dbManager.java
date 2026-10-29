@@ -16,9 +16,12 @@ public class dbManager {
         return task.getResult().getString(field);
         });
   }
-  public Task<QuerySnapshot> getFromSuppliers(String userid, String field){
-    return null;
+  public Task<QuerySnapshot> getAllSales(String userid){
+    return db.collection("user").document(userid).collection("sales").get();
   }
+
+
+
 
   public Task<QuerySnapshot> getInv(String userid, String field){
     if(field == null){
