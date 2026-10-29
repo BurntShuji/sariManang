@@ -21,13 +21,19 @@ import java.util.Map;
 public class SalesActivity extends AppCompatActivity {
 
     private boolean expanded = false;
+  private userIDManager user;
+  private String id;
+  private dbManager db = new dbManager();
+
+
 
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+
+      user = new userIDManager(SalesActivity.this);
+      id = user.getUserID();
         setContentView(R.layout.salespage);
-      String currentUserID = getSharedPreferences("MyUserPrefs", MODE_PRIVATE)
-          .getString("userid", null);
 
         // Section 1: Set up toolbar and navigation
         NavigationHelper.setupToolbar(this, "Sales");
@@ -80,7 +86,7 @@ public class SalesActivity extends AppCompatActivity {
         LinearLayout list = findViewById(R.id.listHistory);
         list.removeAllViews();
 
-        List<SalesRepository.SaleRecord> records = SalesRepository.getRecords();
+        List<SalesRepository.SaleRecord> records = SalesRepository.getRecords(id, db);
         int n = expanded ? records.size() : Math.min(2, records.size());
 
         if (records.isEmpty()) {

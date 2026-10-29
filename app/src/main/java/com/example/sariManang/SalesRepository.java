@@ -7,7 +7,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,12 +19,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Repository class for managing sales transaction records.
  * Provides access to sales history and calculates daily sales metrics.
  */
 public class SalesRepository {
+
+
+
 
 
     /** Model representing an individual sale record. */
@@ -59,8 +66,24 @@ public class SalesRepository {
     }
 
     /** Returns all sales records. */
-    public static List<SaleRecord> getRecords() {
-        return records;
+    public static List<SaleRecord> getRecords(String userid, dbManager db) {
+      Task<QuerySnapshot> querySnapshotTask = db.getAllSales(userid).addOnSuccessListener(querySnapshot -> {
+        records.clear();
+        for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+          SaleRecord sale = new SaleRecord(
+              doc.getString("date"),
+              doc.getString("item"),
+              Objects.requireNonNull(doc.getLong("quantity")).intValue(),
+              doc.getDouble("price").doubleValue()
+          );
+
+          records.add(sale);
+        }
+      })
+          .addOnFailureListener(e ->
+              Log.e("SALES", "Failed to load sales", e)
+          );
+      return records;
     }
 
     /** Adds a new sale transaction. */
