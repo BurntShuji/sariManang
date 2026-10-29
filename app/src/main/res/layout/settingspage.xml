@@ -43,11 +43,17 @@
                     android:checked="true" android:text="Low stock and expiry alerts" android:textColor="@color/text_dark"/>
             </LinearLayout>
 
+
             <!-- Section 4: Data Management and Offline Sync -->
             <LinearLayout style="@style/SariCard">
                 <TextView style="@style/SariLabel" android:text="Data"/>
                 <TextView style="@style/SariMuted" android:layout_marginTop="6dp" android:text="● Offline. Data is saved on this device and will sync once you're online."/>
                 <TextView android:id="@+id/btnArchive" style="@style/SariPill" android:layout_marginTop="10dp" android:text="Archive records older than 6 months"/>
+                <!-- Admin Button -->
+                <TextView android:id="@+id/btnAdmin" style="@style/SariPill"
+                    android:layout_gravity="start"
+                    android:layout_marginTop="10dp"
+                    android:text="Admin"/>
             </LinearLayout>
 
             <!-- Section 5: Logout Action -->

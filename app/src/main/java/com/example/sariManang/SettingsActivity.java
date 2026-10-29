@@ -58,6 +58,10 @@ public class SettingsActivity extends AppCompatActivity {
             in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(in);
         });
+
+      // Section 5: Admin button
+      findViewById(R.id.btnAdmin).setOnClickListener(v ->
+          startActivity(new Intent(this, AdminActivity.class)));
     }
 
     /** Displays a dialog popup to edit account user name and email. */
