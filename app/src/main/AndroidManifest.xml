@@ -28,7 +28,7 @@
         <activity android:name=".SalesActivity" android:exported="false" />
         <activity android:name=".SupplierActivity" android:exported="false" />
         <activity android:name=".SettingsActivity" android:exported="false" />
-        <activity android:name=".AdminActivity" android:exported="true"/>
+        <activity android:name=".AdminActivity" android:exported="false"/>
 
     </application>
 
