@@ -204,7 +204,7 @@ public class DialogHelper {
     }
 
     /** Displays "Add Supplier" dialog popup. */
-    public static void showAddSupplier(Context c, SupplierListener l) {
+    public static void showAddSupplier(Context c, SupplierListener l, dbManager db) {
         AlertDialog d = open(c, R.layout.dialogaddsupplier);
         EditText name = d.findViewById(R.id.etName), contact = d.findViewById(R.id.etContact);
 
@@ -219,22 +219,47 @@ public class DialogHelper {
     }
 
     /** Displays "Log Delivery Quality" rating dialog popup. */
-    public static void showLogQuality(Context c, Supplier sup, Runnable done) {
-        AlertDialog d = open(c, R.layout.dialoglogquality);
-        TextView tvSupName = d.findViewById(R.id.tvSupName);
-        if (tvSupName != null) tvSupName.setText(sup.name);
+    public static void showLogQuality(
+        Context c,
+        Supplier sup,
+        String userID,
+        dbManager db,
+        Runnable done) {
 
-        EditText good = d.findViewById(R.id.etGood), bad = d.findViewById(R.id.etBad);
+      AlertDialog d = open(c, R.layout.dialoglogquality);
 
-        TextView btnSave = d.findViewById(R.id.btnSave);
-        if (btnSave != null) {
-            btnSave.setOnClickListener(v -> {
-                if (!req(good, bad)) return;
-                sup.good += (int) num(good);
-                sup.bad += (int) num(bad);
-                if (done != null) done.run();
-                d.dismiss();
-            });
-        }
+      TextView tvSupName = d.findViewById(R.id.tvSupName);
+      if (tvSupName != null) {
+        tvSupName.setText(sup.name);
+      }
+
+      EditText good = d.findViewById(R.id.etGood);
+      EditText bad = d.findViewById(R.id.etBad);
+
+      TextView btnSave = d.findViewById(R.id.btnSave);
+
+      if (btnSave != null) {
+        btnSave.setOnClickListener(v -> {
+          if (!req(good, bad)) return;
+
+          int goodCount = (int) num(good);
+          int badCount = (int) num(bad);
+
+          db.updateDelivery(userID, sup.name, sup.contact, goodCount, badCount).addOnSuccessListener(unused -> {
+            sup.good += goodCount;
+            sup.bad += badCount;
+
+            if (done != null) done.run();
+
+            d.dismiss();
+          }).addOnFailureListener(e -> {
+            Toast.makeText(
+                c,
+                "Failed to save delivery quality",
+                Toast.LENGTH_SHORT
+            ).show();
+          });
+        });
+      }
     }
 }

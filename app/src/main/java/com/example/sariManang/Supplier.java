@@ -11,6 +11,8 @@ public class Supplier {
     public int bad;
     public boolean favorite;
 
+    public String id;
+
     public Supplier(String name, String contact, int good, int bad, boolean favorite) {
         this.name = name;
         this.contact = contact;
