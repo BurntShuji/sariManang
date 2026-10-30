@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -257,8 +258,16 @@ public class InventoryActivity extends AppCompatActivity {
                   .setTitle("Delete Stock")
                   .setMessage("Remove " + it.name + " from inventory?")
                   .setPositiveButton("Delete", (dialog, which) -> {
-                    items.remove(it);
-                    render(); // Re-render the list immediately
+                    String uid = new userIDManager(this).getUserID();
+
+                    db.deleteStock(uid, it.name)
+                        .addOnSuccessListener(x -> {
+                          items.remove(it);
+                          render();
+                          Toast.makeText(this, "Item deleted", Toast.LENGTH_SHORT).show();
+                        })
+                        .addOnFailureListener(err ->
+                            Toast.makeText(this, "Delete failed: " + err.getMessage(), Toast.LENGTH_LONG).show());
                   })
                   .setNegativeButton("Cancel", null)
                   .show();
