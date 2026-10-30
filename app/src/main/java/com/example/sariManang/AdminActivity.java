@@ -92,16 +92,7 @@ public class AdminActivity extends AppCompatActivity {
         });
         refresh();
 
-      db.getFromUsers(id, "username")
-          .addOnSuccessListener(name -> {
-            if (!"Onionn_".equals(name)) {
-              Toast.makeText(this, "Admins only", Toast.LENGTH_SHORT).show();
-              finish();
-              return;
-            }
-            loadUsers(db);
-          })
-          .addOnFailureListener(e -> finish());
+        loadUsers(db);
     }
 
     // gets inputted search, clears and filters list

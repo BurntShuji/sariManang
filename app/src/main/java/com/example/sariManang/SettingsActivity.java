@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -75,13 +74,6 @@ public class SettingsActivity extends AppCompatActivity {
         btnLowStock.setText("Default low-stock alert: " + getLowStockDefault(this) + " units");
         btnLowStock.setOnClickListener(v -> showLowStockDialog(btnLowStock));
       }
-
-      View adminBtn = findViewById(R.id.btnAdmin);
-      adminBtn.setVisibility(View.GONE);
-      new dbManager().getFromUsers(new userIDManager(this).getUserID(), "username")
-          .addOnSuccessListener(name -> {
-            if ("Onionn_".equals(name)) adminBtn.setVisibility(View.VISIBLE);
-          });
 
       // Section 5: Admin button
       findViewById(R.id.btnAdmin).setOnClickListener(v ->

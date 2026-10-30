@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,13 +44,6 @@ public class MainActivity extends AppCompatActivity {
 
     String user = userid.getUserID();
 
-    android.content.SharedPreferences sp = getSharedPreferences("sari_settings", MODE_PRIVATE);
-    String todayKey = SalesRepository.getTodayFormatted();
-    if (id != null && !todayKey.equals(sp.getString("last_purge", ""))) {
-      DBHelper.purgeOldData(id);
-      sp.edit().putString("last_purge", todayKey).apply();
-    }
-
 
     // Section 1: Set current date and user greeting
     ((TextView) findViewById(R.id.tvDate)).setText(new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()).format(new Date()));
@@ -62,8 +54,6 @@ public class MainActivity extends AppCompatActivity {
         .addOnFailureListener(e -> {
           Log.e(TAG, "Failed to get username", e);
         });
-
-
 
     //dummy stocks lang 'to ha
     List<InventoryActivity.Item> testInventory = new ArrayList<>();
@@ -143,12 +133,11 @@ public class MainActivity extends AppCompatActivity {
     SalesRepository.loadRecords(id, DBHelper, records -> {
       TextView tvSales = findViewById(R.id.tvTodaySales);
       TextView tvTrans = findViewById(R.id.tvTodayTransactions);
-      TextView est = findViewById(R.id.tvHomeEstimate);
-      ProgressBar pb = findViewById(R.id.pbHomeEstimate);
 
       String today = SalesRepository.getTodayFormatted();
       double total = 0;
       int count = 0;
+
       for (SalesRepository.SaleRecord r : records) {
         if (today.equals(r.date)) {
           total += r.getTotal();
@@ -156,20 +145,17 @@ public class MainActivity extends AppCompatActivity {
         }
       }
 
-      if (tvSales != null) tvSales.setText(String.format(Locale.US, "₱ %,.2f", total));
-      if (tvTrans != null) tvTrans.setText(count + (count == 1 ? " transaction today" : " transactions today"));
+      if (tvSales != null) {
+        tvSales.setText(String.format(
+            Locale.US, "₱ %,.2f", total
+        ));
+      }
 
-      int n = records.size();
-      if (pb != null) pb.setProgress(Math.min(n, 5));
-      if (est != null) {
-        if (n < 5) {
-          est.setText("Log at least 5 sales to unlock estimates. " + n + " / 5 logged.");
-        } else {
-          double sum = 0;
-          for (SalesRepository.SaleRecord r : records) sum += r.getTotal();
-          est.setText(String.format(Locale.US,
-              "Average per sale: ₱%,.2f (based on %d records)", sum / n, n));
-        }
+      if (tvTrans != null) {
+        tvTrans.setText(count +
+            (count == 1
+                ? " transaction today"
+                : " transactions today"));
       }
     });
   }
