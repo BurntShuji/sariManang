@@ -296,6 +296,17 @@ public class dbManager {
     return db.collection("user").document(userid).get();
   }
 
+  public Task<Void> deleteStock(String userid, String itemName) {
+    return getStockDoc(userid, itemName).continueWithTask(task -> {
+      if (!task.isSuccessful()) throw task.getException();
+      DocumentSnapshot doc = task.getResult();
+      if (doc == null) throw new IllegalStateException("Item not found: " + itemName);
+      return doc.getReference().delete();
+    });
+  }
 
 
-}
+
+  }
+
+
