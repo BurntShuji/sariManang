@@ -14,6 +14,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -192,11 +194,11 @@ public class InventoryActivity extends AppCompatActivity {
 
     /** Renders the inventory table list in alphabetical order with search filtering. */
     private void render() {
-        list.removeAllViews();
-        sortItemsAlphabetically();
+      list.removeAllViews();
+      sortItemsAlphabetically();
 
-        String q = search.getText().toString().toLowerCase().trim();
-        int shown = 0;
+      String q = search.getText().toString().toLowerCase().trim();
+      int shown = 0;
 
       int threshold = SettingsActivity.getLowStockDefault(this);
 
@@ -241,6 +243,28 @@ public class InventoryActivity extends AppCompatActivity {
             row.addView(cell(low ? it.qty + " ⚠" : String.valueOf(it.qty), 1f, low ? Color.parseColor("#D32F2F") : Color.BLACK, low));
             row.addView(cell(it.expiry.isEmpty() ? "—" : it.expiry, 1.4f, expColor, days <= 30));
             row.addView(cell(it.batch.isEmpty() ? "—" : it.batch, 1.1f, Color.BLACK, false));
+
+            TextView btnDelete = new TextView(this);
+            btnDelete.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.8f));
+            btnDelete.setText("✕");
+            btnDelete.setTextSize(14);
+            btnDelete.setTextColor(Color.parseColor("#D32F2F")); // Red color
+            btnDelete.setGravity(Gravity.CENTER);
+            btnDelete.setPadding(8, 4, 8, 4);
+
+            btnDelete.setOnClickListener(v -> {
+              new AlertDialog.Builder(this)
+                  .setTitle("Delete Stock")
+                  .setMessage("Remove " + it.name + " from inventory?")
+                  .setPositiveButton("Delete", (dialog, which) -> {
+                    items.remove(it);
+                    render(); // Re-render the list immediately
+                  })
+                  .setNegativeButton("Cancel", null)
+                  .show();
+            });
+
+        row.addView(btnDelete);
 
             list.addView(row);
 
