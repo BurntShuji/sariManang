@@ -153,6 +153,12 @@ public class InventoryActivity extends AppCompatActivity {
     private void addOrUpdateStockItem(Context context, String name, int qty, double price, String expiry, String batch, int alertAt) {
 
       boolean exists = false;
+
+      if(qty <= 0){
+        Toast.makeText(this, "Invalid quantity", Toast.LENGTH_SHORT).show();
+        return;
+      }
+
         for (Item item : items) {
             if (item.name.equalsIgnoreCase(name.trim())) {
                 item.qty += qty;
