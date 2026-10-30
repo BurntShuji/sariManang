@@ -2,6 +2,7 @@ package com.example.sariManang;
 
 import static android.content.ContentValues.TAG;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -271,6 +272,66 @@ public class MainActivity extends AppCompatActivity {
         .addOnFailureListener(e ->
             Log.e("UTANG", "Failed to load unpaid debts", e)
         );
+  }
+
+  private void renderLowStock() {
+    LinearLayout container = findViewById(R.id.listLowStock);
+    if (container == null) return;
+
+    InventoryActivity.refreshItems(DBHelper, id, () -> {
+      container.removeAllViews();
+      int defaultThreshold = SettingsActivity.getLowStockDefault(this);
+      int count = 0;
+
+      if (InventoryActivity.items != null) {
+        for (InventoryActivity.Item item : InventoryActivity.items) {
+          if (item.qty <= defaultThreshold) {
+            LinearLayout row = new LinearLayout(this);
+            row.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ));
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setPadding(0, 8, 0, 8);
+
+            LinearLayout nameCol = new LinearLayout(this);
+            LinearLayout.LayoutParams colParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+            colParams.setMargins((int) (10 * getResources().getDisplayMetrics().density), 0, 0, 0);
+            nameCol.setLayoutParams(colParams);
+            nameCol.setOrientation(LinearLayout.VERTICAL);
+
+            TextView tvName = new TextView(this);
+            tvName.setText(item.name);
+            tvName.setTextColor(ContextCompat.getColor(this, R.color.text_dark));
+            tvName.setTextSize(13);
+            tvName.setTypeface(null, Typeface.BOLD);
+            nameCol.addView(tvName);
+
+            TextView tvQty = new TextView(this);
+            tvQty.setText(item.qty + " left");
+            tvQty.setTextColor(ContextCompat.getColor(this, R.color.red_dark));
+            tvQty.setTextSize(13);
+            tvQty.setTypeface(null, Typeface.BOLD);
+
+            row.addView(nameCol);
+            row.addView(tvQty);
+
+            container.addView(row);
+            count++;
+          }
+        }
+      }
+
+      if (count == 0) {
+        TextView empty = new TextView(this);
+        empty.setText("All stock levels normal");
+        empty.setTextColor(ContextCompat.getColor(this, R.color.muted));
+        empty.setTextSize(12);
+        empty.setPadding(0, 8, 0, 8);
+        container.addView(empty);
+      }
+    });
   }
 
   private void renderBestLeast() {
