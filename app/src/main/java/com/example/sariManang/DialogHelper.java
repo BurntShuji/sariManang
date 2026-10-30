@@ -290,9 +290,6 @@ public class DialogHelper {
         }
     }
 
-    public static void showRecordUtang(Context c) {
-        showRecordUtang(c, null);
-    }
 
     /** Displays "Add Stock" dialog popup with autocomplete suggestions for existing items. */
     public static void showAddStock(Context c, List<String> suggestions, StockListener l) {
@@ -345,9 +342,6 @@ public class DialogHelper {
         }
     }
 
-    public static void showAddStock(Context c, StockListener l) {
-        showAddStock(c, null, l);
-    }
 
     /** Displays "Add Supplier" dialog popup. */
     public static void showAddSupplier(Context c, SupplierListener l, dbManager db) {

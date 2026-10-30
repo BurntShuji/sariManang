@@ -89,29 +89,6 @@ public class SalesRepository {
 
 
 
-  /** Calculates total sales amount for today. */
-    public static double getTodayTotalSales() {
-        String today = getTodayFormatted();
-        double total = 0;
-        for (SaleRecord r : records) {
-            if (today.equals(r.date)) {
-                total += r.getTotal();
-            }
-        }
-        return total;
-    }
-
-    /** Counts total number of transactions recorded for today. */
-    public static int getTodayTransactionCount() {
-        String today = getTodayFormatted();
-        int count = 0;
-        for (SaleRecord r : records) {
-            if (today.equals(r.date)) {
-                count++;
-            }
-        }
-        return count;
-    }
 
   public interface SalesLoadedCallback {
     void onLoaded(List<SaleRecord> records);
