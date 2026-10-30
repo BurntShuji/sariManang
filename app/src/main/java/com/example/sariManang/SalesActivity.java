@@ -44,7 +44,7 @@ public class SalesActivity extends AppCompatActivity {
     NavigationHelper.setupToolbar(this, "Sales");
     NavigationHelper.setup(this, R.id.navSales);
 
- //Section 2: Quick action button listeners
+    //Section 2: Quick action button listeners
     View btnLogSale = findViewById(R.id.btnLogSale);
     if (btnLogSale != null) {
       btnLogSale.setOnClickListener(v ->
