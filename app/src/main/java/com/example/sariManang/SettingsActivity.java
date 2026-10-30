@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -18,6 +19,11 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class SettingsActivity extends AppCompatActivity {
 
+  private String accountName = "";
+  private String accountEmail = "";
+  private String userId;
+  private final dbManager db = new dbManager();
+
   public static final String PREFS = "sari_settings";
   public static final String KEY_LOW_STOCK = "low_stock_default";
   public static final int DEFAULT_LOW_STOCK = 5;
@@ -27,8 +33,6 @@ public class SettingsActivity extends AppCompatActivity {
         .getInt(KEY_LOW_STOCK, DEFAULT_LOW_STOCK);
   }
 
-    private String accountName = "Manang Owner";
-    private String accountEmail = "owner@sarimanang.ph";
 
     @Override
     protected void onCreate(Bundle b) {
@@ -40,17 +44,23 @@ public class SettingsActivity extends AppCompatActivity {
         NavigationHelper.setup(this, R.id.navSettings);
 
         // Section 2: User Account section setup & edit listener
-        TextView tvName = findViewById(R.id.tvAccountName);
-        TextView tvEmail = findViewById(R.id.tvAccountEmail);
-        TextView tvAvatar = findViewById(R.id.tvAccountAvatar);
+      userId = new userIDManager(this).getUserID();
 
-        if (tvName != null) tvName.setText(accountName);
-        if (tvEmail != null) tvEmail.setText(accountEmail);
+      db.getUserDoc(userId)
+          .addOnSuccessListener(doc -> {
+            String n = doc.getString("username");
+            String e = doc.getString("email");
+            accountName = n != null ? n : "";
+            accountEmail = e != null ? e : "";
+            updateAccountViews();
+          })
+          .addOnFailureListener(err ->
+              Toast.makeText(this, "Failed to load profile: " + err.getMessage(), Toast.LENGTH_LONG).show());
 
-        TextView btnEdit = findViewById(R.id.btnEditAccount);
-        if (btnEdit != null) {
-            btnEdit.setOnClickListener(v -> showEditAccountDialog());
-        }
+      TextView btnEdit = findViewById(R.id.btnEditAccount);
+      if (btnEdit != null) {
+        btnEdit.setOnClickListener(v -> showEditAccountDialog());
+      }
 
         // Section 3: Data Archiving listener
         findViewById(R.id.btnArchive).setOnClickListener(v -> new AlertDialog.Builder(this)
@@ -72,7 +82,7 @@ public class SettingsActivity extends AppCompatActivity {
 
       TextView btnLowStock = findViewById(R.id.etLowStock);
       if (btnLowStock != null) {
-        btnLowStock.setText("Default low-stock alert: " + getLowStockDefault(this) + " units");
+        btnLowStock.setText(getLowStockDefault(this) + " units");
         btnLowStock.setOnClickListener(v -> showLowStockDialog(btnLowStock));
       }
 
@@ -87,6 +97,21 @@ public class SettingsActivity extends AppCompatActivity {
       findViewById(R.id.btnAdmin).setOnClickListener(v ->
           startActivity(new Intent(this, AdminActivity.class)));
     }
+
+
+  private void updateAccountViews() {
+    TextView tvName = findViewById(R.id.tvAccountName);
+    TextView tvEmail = findViewById(R.id.tvAccountEmail);
+    TextView tvAvatar = findViewById(R.id.tvAccountAvatar);
+    TextView tvStore = findViewById(R.id.etStore);
+
+    if (tvName != null) tvName.setText(accountName);
+    if (tvEmail != null) tvEmail.setText(accountEmail);
+    if (tvStore != null) tvStore.setText(accountName);
+    if (tvAvatar != null && !accountName.isEmpty()) {
+      tvAvatar.setText(accountName.substring(0, 1).toUpperCase());
+    }
+  }
 
   private void showLowStockDialog(TextView label) {
     EditText et = new EditText(this);
@@ -131,28 +156,29 @@ public class SettingsActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Edit Account Profile")
                 .setView(layout)
-                .setPositiveButton("Save", (dialog, which) -> {
-                    String newName = etName.getText().toString().trim();
-                    String newEmail = etEmail.getText().toString().trim();
+            .setPositiveButton("Save", (dialog, which) -> {
+              String newName = etName.getText().toString().trim();
+              String newEmail = etEmail.getText().toString().trim();
 
-                    if (!newName.isEmpty()) {
-                        accountName = newName;
-                        TextView tvName = findViewById(R.id.tvAccountName);
-                        TextView tvAvatar = findViewById(R.id.tvAccountAvatar);
-                        if (tvName != null) tvName.setText(accountName);
-                        if (tvAvatar != null && !accountName.isEmpty()) {
-                            tvAvatar.setText(accountName.substring(0, 1).toUpperCase());
-                        }
-                    }
+              if (newName.isEmpty()) {
+                Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show();
+                return;
+              }
+              if (!Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+                Toast.makeText(this, "Enter a valid email", Toast.LENGTH_SHORT).show();
+                return;
+              }
 
-                    if (!newEmail.isEmpty()) {
-                        accountEmail = newEmail;
-                        TextView tvEmail = findViewById(R.id.tvAccountEmail);
-                        if (tvEmail != null) tvEmail.setText(accountEmail);
-                    }
-
+              db.updateUser(userId, newName, newEmail)
+                  .addOnSuccessListener(x -> {
+                    accountName = newName;
+                    accountEmail = newEmail;
+                    updateAccountViews();
                     Toast.makeText(this, "Account updated successfully", Toast.LENGTH_SHORT).show();
-                })
+                  })
+                  .addOnFailureListener(err ->
+                      Toast.makeText(this, "Update failed: " + err.getMessage(), Toast.LENGTH_LONG).show());
+            })
                 .setNegativeButton("Cancel", null)
                 .show();
     }

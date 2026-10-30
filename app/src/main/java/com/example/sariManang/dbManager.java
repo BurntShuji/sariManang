@@ -290,11 +290,11 @@ public class dbManager {
       if (!task.isSuccessful()) throw task.getException();
       return db.collection("user").document(userid).delete();
     });
-
-
-
   }
 
+  public Task<DocumentSnapshot> getUserDoc(String userid) {
+    return db.collection("user").document(userid).get();
+  }
 
 
 
