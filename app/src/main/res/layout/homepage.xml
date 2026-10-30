@@ -28,11 +28,11 @@
 
             <!-- Section 3: Today's Total Sales Summary Card -->
             <LinearLayout style="@style/SariCard" android:layout_marginTop="12dp">
-                <TextView style="@style/SariLabel" android:text="All-time Total Sales"/>
+                <TextView style="@style/SariLabel" android:text="Today's Total Sales"/>
                 <TextView android:id="@+id/tvTodaySales" android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:layout_marginTop="4dp" android:text="₱ 0.00" android:textColor="@color/text_dark"
                     android:textSize="28sp"/>
-                <TextView android:id="@+id/tvTodayTransactions" style="@style/SariMuted" android:text="0 all-time transactions"/>
+                <TextView android:id="@+id/tvTodayTransactions" style="@style/SariMuted" android:text="0 transactions today"/>
             </LinearLayout>
 
             <!-- Section 4: Overdue Utang and Low Stock Alerts Card -->
