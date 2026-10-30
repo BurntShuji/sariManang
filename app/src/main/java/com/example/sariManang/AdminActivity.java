@@ -77,8 +77,10 @@ public class AdminActivity extends AppCompatActivity {
                 ((TextView) v.findViewById(R.id.tvId)).setText(String.valueOf(u.id));
                 ((TextView) v.findViewById(R.id.tvUser)).setText(u.name);
                 ((TextView) v.findViewById(R.id.tvEmail)).setText(u.email);
-                ((TextView) v.findViewById(R.id.tvLast)).setText(fmt.format(new Date(u.lastActive)));
-                v.findViewById(R.id.ivEdit).setOnClickListener(x -> showEdit(u));
+              long last = u.lastActive;
+              ((TextView) v.findViewById(R.id.tvLast)).setText(
+                  last > 0 ? fmt.format(new Date(last)) : "Never"
+              );                v.findViewById(R.id.ivEdit).setOnClickListener(x -> showEdit(u));
                 v.findViewById(R.id.ivDelete).setOnClickListener(x -> confirmDelete(u));
                 return v;
             }
@@ -185,6 +187,8 @@ public class AdminActivity extends AppCompatActivity {
               long lastActive = timestamp != null
                   ? timestamp.toDate().getTime()
                   : 0L;
+
+
 
               // Add user to ArrayList
               all.add(new User(
