@@ -301,7 +301,6 @@ public class DialogHelper {
         EditText qty = d.findViewById(R.id.etQty),
                  exp = d.findViewById(R.id.etExpiry),
                  batch = d.findViewById(R.id.etBatch),
-                 alert = d.findViewById(R.id.etAlert),
                  markup = d.findViewById(R.id.etMarkup),
                  cost = d.findViewById(R.id.etCost);
         TextView price = d.findViewById(R.id.tvPrice);
@@ -334,12 +333,12 @@ public class DialogHelper {
         TextView btnSave = d.findViewById(R.id.btnSave);
         if (btnSave != null) {
             btnSave.setOnClickListener(v -> {
-                if (!req(item, qty, cost, alert)) return;
+                if (!req(item, qty, cost)) return;
                 //Calculation of price (nilagay ko d2 para mare-eval & masave siya)
                 double costVal = num(cost);
                 double markupVal = num(markup);
                 double selPrice = costVal + (costVal * markupVal);
-                if (l != null) l.onStock(s(item), (int) num(qty), selPrice, s(exp), s(batch), (int) num(alert));
+                if (l != null) l.onStock(s(item), (int) num(qty), selPrice, s(exp), s(batch), SettingsActivity.DEFAULT_LOW_STOCK);
                 Toast.makeText(c, "Stock added", Toast.LENGTH_SHORT).show();
                 d.dismiss();
             });

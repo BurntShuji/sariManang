@@ -165,7 +165,7 @@ public class InventoryActivity extends AppCompatActivity {
                 if (price > 0) item.price = price;
                 if (!expiry.isEmpty()) item.expiry = expiry;
                 if (!batch.isEmpty()) item.batch = batch;
-                if (alertAt > 0) item.alertAt = alertAt;
+                if (alertAt > 0) item.alertAt = SettingsActivity.getLowStockDefault(InventoryActivity.this);
                 exists = true;
                 break;
             }

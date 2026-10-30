@@ -60,7 +60,6 @@
 
     <EditText android:id="@+id/etExpiry" style="@style/SariField" android:hint="Expiration date" android:inputType="text"/>
     <EditText android:id="@+id/etBatch" style="@style/SariField" android:hint="Batch number" android:inputType="text"/>
-    <EditText android:id="@+id/etAlert" style="@style/SariField" android:hint="Alert me when stock drops to" android:inputType="number"/>
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_marginTop="18dp" android:orientation="horizontal" android:weightSum="2">
