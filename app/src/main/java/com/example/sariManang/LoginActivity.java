@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -82,6 +83,7 @@ public class LoginActivity extends AppCompatActivity {
           Map<String, Object> credens = new HashMap<>();
           credens.put("username", u);
           credens.put("password", p);
+          credens.put("lastActive", FieldValue.serverTimestamp());
           FirebaseFirestore.getInstance().collection("user").add(credens);
           signUp = false;
         } else {
