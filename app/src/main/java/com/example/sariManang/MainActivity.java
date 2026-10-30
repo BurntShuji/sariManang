@@ -126,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
     renderTodaySales();
     renderUtang();
     renderBestLeast();
+    renderLowStock();
   }
 
   @Override
