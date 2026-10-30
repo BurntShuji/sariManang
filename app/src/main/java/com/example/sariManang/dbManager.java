@@ -5,6 +5,7 @@ import static android.content.ContentValues.TAG;
 import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
@@ -13,6 +14,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
 import com.google.firebase.firestore.WriteBatch;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +50,8 @@ public class dbManager {
 
 
   public Task<String> getDebtID(String userid, String name, double amount, String due){
-    return db.collection("user").document(userid).collection("debt").whereEqualTo("customer", name).whereEqualTo("amount",amount).whereEqualTo("dueDate", due)
+    return db.collection("user").document(userid).collection("debt")
+        .whereEqualTo("customer", name).whereEqualTo("amount",amount).whereEqualTo("dueDate", due)
         .get()
         .continueWith(task -> {
           if (!task.isSuccessful()) {
@@ -137,6 +140,9 @@ public class dbManager {
                   "bad", bad
               );
         });
+
+
+
   }
 
   public void updateLastActive(String userID) {
@@ -252,7 +258,42 @@ public class dbManager {
     purge(userid, "suppliers", cutoff);
   }
 
+  public Task<Void> updateUser(String userid, String name, String email) {
+    return db.collection("user").document(userid)
+        .update("username", name, "email", email);
+  }
 
+  // Deletes every doc in one of the user's subcollections
+  private Task<Void> deleteCollection(String userid, String collection) {
+    return db.collection("user").document(userid).collection(collection).get()
+        .continueWithTask(task -> {
+          if (!task.isSuccessful()) throw task.getException();
+          List<DocumentSnapshot> docs = task.getResult().getDocuments();
+          List<Task<Void>> commits = new ArrayList<>();
+          for (int i = 0; i < docs.size(); i += 400) {
+            WriteBatch batch = db.batch();
+            for (DocumentSnapshot d : docs.subList(i, Math.min(i + 400, docs.size()))) {
+              batch.delete(d.getReference());
+            }
+            commits.add(batch.commit());
+          }
+          return Tasks.whenAll(commits);
+        });
+  }
+
+  public Task<Void> deleteUser(String userid) {
+    List<Task<Void>> subs = new ArrayList<>();
+    for (String c : new String[]{"sales", "debt", "stock", "suppliers"}) {
+      subs.add(deleteCollection(userid, c));
+    }
+    return Tasks.whenAll(subs).continueWithTask(task -> {
+      if (!task.isSuccessful()) throw task.getException();
+      return db.collection("user").document(userid).delete();
+    });
+
+
+
+  }
 
 
 

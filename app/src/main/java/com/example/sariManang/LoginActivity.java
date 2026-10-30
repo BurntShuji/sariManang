@@ -83,6 +83,7 @@ public class LoginActivity extends AppCompatActivity {
           credens.put("username", u);
           credens.put("password", p);
           FirebaseFirestore.getInstance().collection("user").add(credens);
+          signUp = false;
         } else {
 
           db.LoginChecker(u, p)

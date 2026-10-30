@@ -88,9 +88,8 @@ public class AdminActivity extends AppCompatActivity {
         search.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence a, int x, int y, int z) {}
             public void onTextChanged(CharSequence a, int x, int y, int z) {}
-            public void afterTextChanged(Editable e) { refresh(); }
+            public void afterTextChanged(Editable e) { applyFilter(); }
         });
-        refresh();
 
       db.getFromUsers(id, "username")
           .addOnSuccessListener(name -> {
@@ -105,17 +104,18 @@ public class AdminActivity extends AppCompatActivity {
     }
 
     // gets inputted search, clears and filters list
-    private void refresh() {
-        String q = search.getText().toString().toLowerCase().trim();
-        shown.clear();
-        for (User u : all) {
-            if (u.name.toLowerCase().contains(q) || u.email.toLowerCase().contains(q)) shown.add(u);
-        }
-        adapter.notifyDataSetChanged();
+    private void applyFilter() {
+      String q = search.getText().toString().toLowerCase().trim();
+      shown.clear();
+      for (User u : all) {
+        if (u.name.toLowerCase().contains(q) || u.email.toLowerCase().contains(q)) shown.add(u);
+      }
+      adapter.notifyDataSetChanged();
     }
 
+  // real refresh: re-fetch from Firestore
 
-    // edit user
+  // edit user
     private void showEdit(User u) {
         AlertDialog d = new AlertDialog.Builder(this).setView(R.layout.dialogedituser).create();
         d.show();
@@ -125,16 +125,22 @@ public class AdminActivity extends AppCompatActivity {
         name.setText(u.name);
         email.setText(u.email);
         d.findViewById(R.id.btnCancel).setOnClickListener(v -> d.dismiss());
-        d.findViewById(R.id.btnSave).setOnClickListener(v -> {
-            String n = name.getText().toString().trim(), e = email.getText().toString().trim();
-            if (n.isEmpty()) { name.setError("Required"); return; }
-            if (!Patterns.EMAIL_ADDRESS.matcher(e).matches()) { email.setError("Enter a valid email"); return; }
-            u.name = n;
-            u.email = e;
-            refresh();
-            Toast.makeText(this, "User updated", Toast.LENGTH_SHORT).show();
-            d.dismiss();
-        });
+      d.findViewById(R.id.btnSave).setOnClickListener(v -> {
+        String n = name.getText().toString().trim(), e = email.getText().toString().trim();
+        if (n.isEmpty()) { name.setError("Required"); return; }
+        if (!Patterns.EMAIL_ADDRESS.matcher(e).matches()) { email.setError("Enter a valid email"); return; }
+
+        db.updateUser(u.id, n, e)
+            .addOnSuccessListener(x -> {
+              u.name = n;
+              u.email = e;
+              applyFilter();
+              Toast.makeText(this, "User updated", Toast.LENGTH_SHORT).show();
+              d.dismiss();
+            })
+            .addOnFailureListener(err ->
+                Toast.makeText(this, "Update failed: " + err.getMessage(), Toast.LENGTH_LONG).show());
+      });
     }
 
     //confirm delete
@@ -142,11 +148,20 @@ public class AdminActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Delete user?")
                 .setMessage("Remove " + u.name + " (ID " + u.id + ")? This cannot be undone.")
-                .setPositiveButton("Delete", (d, w) -> {
+            .setPositiveButton("Delete", (d, w) -> {
+              if (u.id.equals(id)) {
+                Toast.makeText(this, "You can't delete your own admin account", Toast.LENGTH_SHORT).show();
+                return;
+              }
+              db.deleteUser(u.id)
+                  .addOnSuccessListener(x -> {
                     all.remove(u);
-                    refresh();
+                    applyFilter();
                     Toast.makeText(this, "User deleted", Toast.LENGTH_SHORT).show();
-                })
+                  })
+                  .addOnFailureListener(err ->
+                      Toast.makeText(this, "Delete failed: " + err.getMessage(), Toast.LENGTH_LONG).show());
+            })
                 .setNegativeButton("Cancel", null).show();
     }
 
@@ -180,9 +195,10 @@ public class AdminActivity extends AppCompatActivity {
               ));
             }
 
-            // Refresh the ListView after loading users
-            refresh();
+            applyFilter();
 
+
+            // Refresh the ListView after loading users
           })
           .addOnFailureListener(e -> {
             Toast.makeText(
